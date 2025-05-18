@@ -42,18 +42,6 @@ function QuienesSomos() {
           </div>
 
         </div>
-
-        {/* Barra deslizable de logos */}
-        <div className="overflow-hidden whitespace-nowrap">
-          <div className="inline-block animate-slide">
-            <img src="https://via.placeholder.com/150x80?text=Cliente+1" alt="Cliente 1" className="inline-block mx-4" />
-            <img src="https://via.placeholder.com/150x80?text=Cliente+2" alt="Cliente 2" className="inline-block mx-4" />
-            <img src="https://via.placeholder.com/150x80?text=Cliente+3" alt="Cliente 3" className="inline-block mx-4" />
-            <img src="https://via.placeholder.com/150x80?text=Cliente+4" alt="Cliente 4" className="inline-block mx-4" />
-            <img src="https://via.placeholder.com/150x80?text=Cliente+5" alt="Cliente 5" className="inline-block mx-4" />
-          </div>
-        </div>
-
       </div>
     </section>
   );
