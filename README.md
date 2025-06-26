@@ -1,18 +1,3 @@
-Somos un equipo de estudiantes de Ingenieria en Informatica del Instituto Profesional DUOC UC, llamado Print("DEV") o simplemente DEV.
-Estamos trabajando en el desarollo de una pagina web, que busca ofrecer un lugar para empresas y pymes, donde estas pueden publicar sus servicios y manegar sus agendas.
-El desarrollo de la pagina web esta en proceso, pero actualmente este repositorio incluye:
-- Avances del proceso del desarrollo por semanas
-- Avance actual del codigo que maneja la pagina web
-
-Para hacer que el programa actual funcione es necesario tener las siguientes herramientas implementadas en visual code con la version defifida dentro de yo-te-agendo-final/package.json :
-- Tailwind
-- React.js
-- Node.js
-- Vite
-
-Para correr el codigo puedes el clonar este repositorio en tu escritorio, asegurate de estar dentro de la carpeta yo-te-agendo-final, y corre npm run dev
-
-
 # 📚 YoTeAgendo – Frontend, backend y base de datos
 
 Aplicación web desarrollada como parte del proyecto evaluado en clase GitHub (MICROSOFT LEARN). Este repositorio contiene el frontend y backend del proyecto, con el frontend construido con React y herramientas como Vite para un desarrollo rápido, Tailwind CSS para un diseño responsivo y modular, y React Router DOM para la gestión de rutas.
@@ -106,22 +91,9 @@ Abrir en navegador: `http://localhost:5173`
 
 ---
 
-## 🎯 Funcionalidades Mínimas (NO DEFINIDO TODAVIA, INFORMACION TEMPORAL DE RELLENO)
-
-* ✅ **Landing page con redirección automática tras 5 segundos**
-* ✅ **Vista principal con barra de búsqueda (filtrado por título)**
-* ✅ **Vista de detalle del libro (BookDetail) con datos completos y HTML enriquecido**
-* ✅ **Carrito persistente (localStorage) con posibilidad de eliminar elementos**
-* ✅ **Vista de checkout con resumen, botón de confirmación y redirección**
-* ✅ **Integración de React Router con rutas declarativas y dinámicas (`/book/:id`)**
-* ✅ **Custom hook funcional (`useGoogleBooks`) y context global (`useCart`)**
-* ✅ **Integración de API pública: Google Books API para cargar resultados reales**
-
----
-
 ## 🔗 API Integrada
 
-Esta aplicación hace uso de la API pública de **Google Books**:
+Esta aplicación hace uso de la API pública de google, la cual nos permite el mostrar un mapa al momento de registrar una empresa:
 
 * Documentación: [https://developers.google.com/books/docs/v1/using](https://developers.google.com/books/docs/v1/using)
 * Endpoint utilizado: `https://www.googleapis.com/books/v1/volumes?q=`
@@ -135,24 +107,6 @@ El hook personalizado `useGoogleBooks()` realiza peticiones a esta API en tiempo
 * Páginas, editorial, calificaciones, categorías y más
 
 ---
-
-## 🌐 Despliegue
-
-* 🔗 URL del sitio en producción: [https://relatos-de-papel-frontend-full-satck.vercel.app](https://relatos-de-papel-frontend-full-satck.vercel.app)
-* Plataforma utilizada: **Vercel**
-
----
-
-## 📊 Evaluación por criterios (UNIR)
-
-| Criterio | Descripción                        | Puntos | Cumplido                                           |
-| -------- | ---------------------------------- | ------ | -------------------------------------------------- |
-| C1       | 10 componentes funcionales con JSX | 0.5    | ✅                                                  |
-| C2       | Uso de `useState` y `useEffect`    | 0.5    | ✅                                                  |
-| C3       | Custom Hook implementado y en uso  | 1.0    | ✅ `useGoogleBooks`                                 |
-| C4       | Uso correcto de React Router       | 1.0    | ✅ con rutas `/`, `/home`, `/book/:id`, `/checkout` |
-| C5       | Estilo con CSS y metodología BEM   | 1.0    | ✅ con Tailwind + clases BEM en base CSS            |
-| C6       | Vistas completas y funcionales     | 4.5    | ✅                                                  |
 
 ---
 
