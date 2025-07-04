@@ -42,6 +42,8 @@ function QuienesSomos() {
           </div>
 
         </div>
+<<<<<<< HEAD
+=======
 
         {/* Barra deslizable de logos */}
         <div className="overflow-hidden whitespace-nowrap">
@@ -54,6 +56,7 @@ function QuienesSomos() {
           </div>
         </div>
 
+>>>>>>> d8b8c7cb6550cbfdf48db52ccb3ff40c4194ce44
       </div>
     </section>
   );
