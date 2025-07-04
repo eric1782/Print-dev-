@@ -11,7 +11,10 @@
   },
   "dependencies": {
     "aos": "^2.3.4",
+<<<<<<< HEAD
     "firebase": "^11.7.1",
+=======
+>>>>>>> d8b8c7cb6550cbfdf48db52ccb3ff40c4194ce44
     "lucide-react": "^0.503.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
