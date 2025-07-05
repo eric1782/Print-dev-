@@ -2,7 +2,7 @@
 
 Aplicación web desarrollada como parte del proyecto evaluado en clase GitHub (MICROSOFT LEARN). Este repositorio contiene el frontend y backend del proyecto, con el frontend construido con React y herramientas como Vite para un desarrollo rápido, Tailwind CSS para un diseño responsivo y modular, y React Router DOM para la gestión de rutas.
 El backend de la aplicación, que gestiona la lógica de negocio, se conecta a una base de datos en Firebase para la persistencia de datos. Se han seguido buenas prácticas en la creación de componentes, rutas y diseño responsivo, asegurando la funcionalidad integral del sistema.
-
+  
 ---
 
 ## 🚀 Objetivo del Proyecto
@@ -93,19 +93,7 @@ Abrir en navegador: `http://localhost:5173`
 
 ## 🔗 API Integrada
 
-Esta aplicación hace uso de la API pública de google, la cual nos permite el mostrar un mapa al momento de registrar una empresa:
-
-* Documentación: [https://developers.google.com/books/docs/v1/using](https://developers.google.com/books/docs/v1/using)
-* Endpoint utilizado: `https://www.googleapis.com/books/v1/volumes?q=`
-
-El hook personalizado `useGoogleBooks()` realiza peticiones a esta API en tiempo real y carga:
-
-* Título del libro
-* Autor/es
-* Imagen
-* Descripción HTML
-* Páginas, editorial, calificaciones, categorías y más
-
+Esta aplicación hace uso de la API pública de google, la cual nos permite el mostrar un mapa al momento de registrar una empresa
 ---
 
 ---
