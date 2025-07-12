@@ -103,4 +103,4 @@ Esta aplicación hace uso de la API pública de google, la cual nos permite el m
 
 ## 📝 Licencia
 
-© 2025 - Proyecto académico desarrollado para la Universidad Internacional de La Rioja (UNIR).
+© 2025 - MIT License.
