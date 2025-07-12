@@ -1,7 +1,6 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-<<<<<<< HEAD
 
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
@@ -22,8 +21,4 @@
 .scrollbar-thin {
     scrollbar-width: thin;
     scrollbar-color: #6366f1 transparent;
-=======
-html {
-    scroll-behavior: smooth;
->>>>>>> d8b8c7cb6550cbfdf48db52ccb3ff40c4194ce44
 }

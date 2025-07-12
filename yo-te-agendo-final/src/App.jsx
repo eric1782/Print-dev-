@@ -1,5 +1,7 @@
+// src/App.jsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-<<<<<<< HEAD
+
+// Landing Page
 import Header from "./components/Header";
 import Hero from "./components/Hero";
 import QuienesSomos from "./pages/Landing/QuienesSomos";
@@ -7,48 +9,26 @@ import Servicios from "./pages/Landing/Servicios";
 import Contacto from "./pages/Landing/Contacto";
 import Footer from "./components/Footer";
 
+// Autenticación
 import Login from "./pages/Login/Login";
 import Registro from "./pages/Login/Registro";
+
+// Dashboards
 import HomeUsuario from "./pages/Home/HomeUsuario";
 import HomeEmpresa from "./pages/Home/HomeEmpresa";
+import HomeEmpresaAgenda from "./empresa/HomeEmpresaAgenda";
+
+// Perfil Empresa Público
 import PerfilEmpresaPublico from "./usuario/PerfilEmpresaPublico";
-=======
 
-import Header from "./components/Header";
-import Footer from "./components/Footer";
-import ScrollToTop from "./components/ScrollToTop";
-
-import QuienesSomos from "./pages/Landing/QuienesSomos";
-import Servicios from "./pages/Landing/Servicios";
-import Contacto from "./pages/Landing/Contacto";
-
-import HomeUsuario from "./pages/Home/HomeUsuario"; // Import HomeUsuario
-
-function LandingPage() {
-  return (
-    <>
-      <Header />
-      <main className="pt-20">
-        <section id="quienes-somos">
-          <QuienesSomos />
-        </section>
-        <section id="servicios">
-          <Servicios />
-        </section>
-        <section id="contacto">
-          <Contacto />
-        </section>
-      </main>
-      <Footer />
-    </>
-  );
-}
->>>>>>> d8b8c7cb6550cbfdf48db52ccb3ff40c4194ce44
+// Páginas de usuario
+import Ayuda from "./usuario/AyudaUsuario";
+import Configuracion from "./usuario/ConfiguracionUsuario";
+import MisDatos from "./usuario/MisDatosUsuario";
 
 function App() {
   return (
     <Router>
-<<<<<<< HEAD
       <Routes>
         {/* Landing Page */}
         <Route
@@ -60,27 +40,10 @@ function App() {
               <QuienesSomos />
               <Servicios />
               <Contacto />
-=======
-      <ScrollToTop />
-      <Routes>
-        {/* Landing Page */}
-        <Route path="/" element={<LandingPage />} />
-
-        {/* Página después de iniciar sesión */}
-        <Route
-          path="/home"
-          element={
-            <>
-              <Header />
-              <main className="pt-20">
-                <HomeUsuario />
-              </main>
->>>>>>> d8b8c7cb6550cbfdf48db52ccb3ff40c4194ce44
               <Footer />
             </>
           }
         />
-<<<<<<< HEAD
 
         {/* Autenticación */}
         <Route path="/login" element={<Login />} />
@@ -89,25 +52,18 @@ function App() {
         {/* Dashboards */}
         <Route path="/home-usuario" element={<HomeUsuario />} />
         <Route path="/home-empresa" element={<HomeEmpresa />} />
+        <Route path="/home-empresa/agenda" element={<HomeEmpresaAgenda />} />
 
-        {/* Vista pública del perfil de empresa */}
+        {/* Perfil público empresa */}
         <Route path="/empresa/:id" element={<PerfilEmpresaPublico />} />
-=======
->>>>>>> d8b8c7cb6550cbfdf48db52ccb3ff40c4194ce44
+
+        {/* Vistas usuario */}
+        <Route path="/usuario/ayuda" element={<Ayuda />} />
+        <Route path="/usuario/configuracion" element={<Configuracion />} />
+        <Route path="/usuario/mis-datos" element={<MisDatos />} />
       </Routes>
     </Router>
   );
 }
-<<<<<<< HEAD
 
 export default App;
-=======
-export default App;
-
-
-
-
-
-
-
->>>>>>> d8b8c7cb6550cbfdf48db52ccb3ff40c4194ce44

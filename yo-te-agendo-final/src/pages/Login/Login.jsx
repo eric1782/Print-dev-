@@ -1,3 +1,4 @@
+// Login.jsx
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
@@ -18,7 +19,7 @@ function Login() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const uid = userCredential.user.uid;
 
-      // Primero buscar en 'usuarios'
+      // Buscar primero en 'usuarios'
       let docRef = doc(db, "usuarios", uid);
       let docSnap = await getDoc(docRef);
 
@@ -43,12 +44,9 @@ function Login() {
       }
 
       setError("No se encontró información del usuario en la base de datos.");
-
     } catch (err) {
       console.error("Error de Firebase:", err.code, err.message);
-      const errorCode = err.code;
-
-      switch (errorCode) {
+      switch (err.code) {
         case "auth/user-not-found":
           setError("El usuario no existe.");
           break;
@@ -69,7 +67,6 @@ function Login() {
 
   return (
     <section
-      data-aos="fade-up"
       className="min-h-screen flex items-center justify-center bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-6"
       id="hero"
     >

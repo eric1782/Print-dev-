@@ -1,130 +1,187 @@
-import { useParams } from "react-router-dom";
+// src/usuario/PerfilEmpresaPublico.jsx
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
-import { useEffect, useState } from "react";
+import ReservarPopup from "../components/ReservarPopup";
 
 function PerfilEmpresaPublico() {
   const { id } = useParams();
-  const [empresa, setEmpresa] = useState(null);
-  const [seccion, setSeccion] = useState("servicios");
+  const navigate = useNavigate();
+  const [empresaData, setEmpresaData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [popupServicio, setPopupServicio] = useState(null);
 
   useEffect(() => {
-    const fetchEmpresa = async () => {
+    const fetchEmpresaData = async () => {
       try {
         const docRef = doc(db, "empresas", id);
         const docSnap = await getDoc(docRef);
+
         if (docSnap.exists()) {
-          setEmpresa(docSnap.data());
+          const data = docSnap.data();
+
+          const normalizedHorarios = data.horarios?.map(h => ({
+            ...h,
+            rangos: Array.isArray(h.rangos) && h.rangos.length > 0
+              ? h.rangos
+              : (h.desde || h.hasta)
+                ? [{ horaInicio: h.desde || "", horaFin: h.hasta || "" }]
+                : []
+          })) || [];
+
+          const servicesWithIds = data.servicios?.map((service, index) => ({
+            ...service,
+            id: service.id || `temp-service-${index}`
+          })) || [];
+
+          setEmpresaData({
+            ...data,
+            horarios: normalizedHorarios,
+            servicios: servicesWithIds,
+            id: docSnap.id
+          });
         } else {
-          console.error("Empresa no encontrada");
+          setError("Empresa no encontrada.");
         }
-      } catch (error) {
-        console.error("Error al cargar empresa:", error);
+      } catch (err) {
+        console.error("Error al cargar datos:", err);
+        setError("Error al cargar información.");
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchEmpresa();
+    fetchEmpresaData();
   }, [id]);
 
-  if (!empresa) return <p className="text-center mt-10 text-gray-500">Cargando empresa...</p>;
+  if (loading) return <p className="text-center mt-10">Cargando empresa...</p>;
+  if (error) return <p className="text-center mt-10 text-red-500">{error}</p>;
+  if (!empresaData) return null;
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Portada */}
-      <div className="relative h-56 sm:h-72 md:h-96 bg-gray-300">
-        {empresa.fotoPortada && (
+    <div className="max-w-5xl mx-auto p-4">
+      {/* Botón Volver */}
+      <div className="mb-4">
+        <button
+          onClick={() => navigate("/home-usuario")}
+          className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
+        >
+          ← Volver al inicio
+        </button>
+      </div>
+
+      {/* Foto de portada */}
+      <div className="relative h-64 bg-gray-200 rounded-lg overflow-hidden mb-8 shadow-md">
+        {empresaData.fotoPortada ? (
           <img
-            src={empresa.fotoPortada}
+            src={empresaData.fotoPortada}
             alt="Portada"
             className="w-full h-full object-cover"
           />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-gray-500">
+            Sin portada
+          </div>
         )}
-        <div className="absolute -bottom-10 left-6">
-          {empresa.fotoPerfil ? (
-            <img
-              src={empresa.fotoPerfil}
-              alt="Perfil"
-              className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-white object-cover"
-            />
-          ) : (
-            <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gray-200 rounded-full border-4 border-white flex items-center justify-center text-gray-500 font-bold">
-              LOGO
-            </div>
-          )}
+        <div className="absolute bottom-4 left-4 text-white text-3xl font-bold drop-shadow-md">
+          {empresaData.nombreEmpresa}
         </div>
       </div>
 
-      {/* Contenido */}
-      <div className="mt-16 max-w-5xl mx-auto px-6 pb-12">
-        <h1 className="text-2xl sm:text-3xl font-bold text-indigo-700 mb-6">
-          {empresa.nombreEmpresa || "Nombre Empresa"}
-        </h1>
+      {/* Descripción */}
+      <section className="bg-white rounded-lg shadow p-6 mb-6 border border-gray-200">
+        <h2 className="text-xl font-semibold text-indigo-700 mb-2">Sobre Nosotros</h2>
+        <p className="text-gray-700">{empresaData.descripcion || "Sin descripción."}</p>
+      </section>
 
-        {/* Menú de secciones */}
-        <div className="flex flex-wrap gap-4 mb-8 border-b pb-2">
-          {["servicios", "descripcion", "contacto", "direccion"].map((item) => (
-            <button
-              key={item}
-              onClick={() => setSeccion(item)}
-              className={`capitalize text-sm sm:text-base font-medium px-4 py-2 rounded-full ${
-                seccion === item
-                  ? "bg-indigo-600 text-white"
-                  : "bg-indigo-100 text-indigo-600"
-              }`}
+      {/* Horarios */}
+      <section className="bg-white rounded-lg shadow p-6 mb-6 border border-gray-200">
+        <h2 className="text-xl font-semibold text-indigo-700 mb-2">Horarios</h2>
+        {empresaData.horarios?.length > 0 ? (
+          <ul className="text-gray-800 space-y-1">
+            {empresaData.horarios.map((h, idx) => (
+              <li key={idx}>
+                <strong>{h.dia}:</strong>{" "}
+                {h.rangos.length > 0
+                  ? h.rangos.map((r, i) => (
+                      <span key={i}>
+                        {r.horaInicio} - {r.horaFin}
+                        {i < h.rangos.length - 1 ? ", " : ""}
+                      </span>
+                    ))
+                  : "Cerrado"}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-600">Sin horarios disponibles.</p>
+        )}
+      </section>
+
+      {/* Servicios */}
+      <section className="bg-white rounded-lg shadow p-6 mb-6 border border-gray-200">
+        <h2 className="text-xl font-semibold text-indigo-700 mb-2">Servicios</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {empresaData.servicios.map((serv) => (
+            <div
+              key={serv.id}
+              className="bg-indigo-50 border border-indigo-100 p-4 rounded-xl shadow-sm flex flex-col justify-between"
             >
-              {item}
-            </button>
+              <div>
+                <div className="text-4xl mb-2">{serv.icono || "🔧"}</div>
+                <h3 className="text-lg font-bold text-indigo-700">{serv.nombre}</h3>
+                <p className="text-gray-600 text-sm">{serv.descripcion}</p>
+                <p className="text-gray-700 mt-1">🕒 {serv.tiempo} min</p>
+                <p className="text-indigo-800 font-bold">💲{serv.precio}</p>
+              </div>
+              <button
+                onClick={() => setPopupServicio(serv)}
+                className="mt-4 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded transition"
+              >
+                Reservar Servicio
+              </button>
+            </div>
           ))}
         </div>
+      </section>
 
-        {/* Contenido dinámico */}
-        <div className="bg-white p-6 rounded-xl shadow-sm">
-          {seccion === "servicios" && (
-            <div>
-              <h2 className="text-xl font-semibold mb-4 text-indigo-600">Servicios</h2>
-              {empresa.servicios?.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {empresa.servicios.map((s, i) => (
-                    <div key={i} className="bg-indigo-50 p-4 rounded-lg">
-                      {s.imagen && (
-                        <img src={s.imagen} alt={s.nombre} className="w-full h-32 object-cover rounded mb-2" />
-                      )}
-                      <h3 className="font-bold text-indigo-700">{s.nombre}</h3>
-                      <p className="text-sm text-gray-700">{s.descripcion}</p>
-                      <p className="text-sm text-indigo-600 font-medium mt-1">${s.precio}</p>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p>No hay servicios registrados.</p>
-              )}
-            </div>
-          )}
+      {/* Contacto */}
+      <section className="bg-white rounded-lg shadow p-6 mb-6 border border-gray-200">
+        <h2 className="text-xl font-semibold text-indigo-700 mb-2">Contacto</h2>
+        <ul className="text-gray-700 space-y-1">
+          <li><strong>Instagram:</strong> {empresaData.contacto?.instagram || "No disponible"}</li>
+          <li><strong>Facebook:</strong> {empresaData.contacto?.facebook || "No disponible"}</li>
+          <li><strong>Teléfono:</strong> {empresaData.contacto?.telefono || "No disponible"}</li>
+        </ul>
+      </section>
 
-          {seccion === "descripcion" && (
-            <div>
-              <h2 className="text-xl font-semibold mb-2 text-indigo-600">Descripción</h2>
-              <p className="text-gray-700 whitespace-pre-wrap">{empresa.descripcion || "Sin descripción."}</p>
-            </div>
-          )}
+      {/* Dirección y mapa */}
+      <section className="bg-white rounded-lg shadow p-6 border border-gray-200">
+        <h2 className="text-xl font-semibold text-indigo-700 mb-2">Ubicación</h2>
+        <p className="text-gray-700 mb-4">{empresaData.direccion || "No disponible"}</p>
+        {empresaData.ubicacion?.lat && empresaData.ubicacion?.lng ? (
+          <iframe
+            className="w-full h-64 rounded shadow"
+            src={`https://maps.google.com/maps?q=${empresaData.ubicacion.lat},${empresaData.ubicacion.lng}&hl=es&z=16&output=embed`}
+            loading="lazy"
+            allowFullScreen
+            title="Mapa ubicación"
+          />
+        ) : (
+          <p className="text-gray-500">No hay ubicación geográfica disponible.</p>
+        )}
+      </section>
 
-          {seccion === "contacto" && (
-            <div className="space-y-2">
-              <h2 className="text-xl font-semibold text-indigo-600">Contacto</h2>
-              <p><strong>Instagram:</strong> {empresa.contacto?.instagram || "No disponible"}</p>
-              <p><strong>Facebook:</strong> {empresa.contacto?.facebook || "No disponible"}</p>
-              <p><strong>Teléfono:</strong> {empresa.contacto?.telefono || "No disponible"}</p>
-            </div>
-          )}
-
-          {seccion === "direccion" && (
-            <div>
-              <h2 className="text-xl font-semibold mb-2 text-indigo-600">Dirección</h2>
-              <p className="text-gray-700">{empresa.direccion || "No disponible"}</p>
-            </div>
-          )}
-        </div>
-      </div>
+      {/* Popup reserva */}
+      {popupServicio && (
+        <ReservarPopup
+          servicio={popupServicio}
+          empresa={empresaData}
+          onClose={() => setPopupServicio(null)}
+        />
+      )}
     </div>
   );
 }

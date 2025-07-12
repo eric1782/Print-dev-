@@ -31,29 +31,17 @@ function Registro() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const uid = userCredential.user.uid;
 
-      const userData =
-        role === "empresa"
-          ? {
-              rol: "empresa",
-              email,
-              nombreEmpresa,
-              razonSocial,
-              rutEmpresa,
-              representanteLegal: nombreRepresentante,
-              usuarioEmpresa,
-              rubro,
-              categoria,
-            }
-          : {
-              rol: "usuario",
-              email,
-              nombre,
-            };
-
-      await setDoc(doc(db, "usuarios", uid), userData);
-
       if (role === "empresa") {
-        await setDoc(doc(db, "empresas", uid), {
+        const empresaData = {
+          rol: "empresa",
+          email,
+          nombreEmpresa,
+          razonSocial,
+          rutEmpresa,
+          representanteLegal: nombreRepresentante,
+          usuarioEmpresa,
+          rubro,
+          categoria,
           descripcion: "",
           direccion: "",
           horarios: [],
@@ -61,16 +49,24 @@ function Registro() {
           servicios: [],
           fotoPerfil: "",
           fotoPortada: ""
-        });
+        };
+
+        await setDoc(doc(db, "empresas", uid), empresaData);
+      } else {
+        const usuarioData = {
+          rol: "usuario",
+          email,
+          nombre,
+        };
+
+        await setDoc(doc(db, "usuarios", uid), usuarioData);
       }
 
       alert("Registro exitoso");
       navigate("/login");
     } catch (err) {
-      const errorCode = err.code;
-      console.error("Error de autenticación:", errorCode);
-
-      switch (errorCode) {
+      console.error("Error de autenticación:", err.code);
+      switch (err.code) {
         case "auth/email-already-in-use":
           setError("Este correo ya está registrado.");
           break;
