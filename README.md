@@ -14,6 +14,13 @@ Desarrollar una plataforma web integral que facilite la gestión de servicios y 
 * Potenciar la búsqueda y descubrimiento de servicios, permitiendo a los usuarios encontrar empresas y ofertas que se ajusten precisamente a sus requisitos.
 
 ---
+## 📝 Herramientas implementadas
+- Tailwind css
+- React y Vite
+- Firebase
+- Javascript
+
+---
 
 ## 🧩 Estructura del Proyecto
 
@@ -87,13 +94,9 @@ Viajar en tu navegador de preferencia a: `http://localhost:5173`
 
 ---
 
-### 🟧 FASE 3 – despliegue (futuro...)
-
----
-
 ## 🔗 API Integrada
 
-Esta aplicación hace uso de la API pública de google, la cual nos permite el mostrar un mapa al momento de registrar una empresa
+Esta aplicación hace uso de la API pública de google, la cual nos permite el mostrar un mapa al momento de registrar la ubicacion de una empresa, directamente tomando la direccion de esta y mostrandola en un mapa de referencia.
 ---
 
 ---
