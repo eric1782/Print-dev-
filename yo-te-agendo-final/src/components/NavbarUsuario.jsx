@@ -13,14 +13,13 @@ function NavbarUsuario() {
   };
 
   return (
-    <nav className="bg-white shadow px-6 py-4 flex justify-between items-center">
+    <nav className="bg-white shadow px-6 py-4 flex justify-between items-center sticky top-0 z-50">
       <h1
         onClick={() => navigate("/home-usuario")}
         className="text-xl font-bold text-indigo-700 cursor-pointer"
       >
         LOGO
       </h1>
-
       <div className="flex items-center gap-4">
         <button
           onClick={cerrarSesion}
@@ -28,7 +27,6 @@ function NavbarUsuario() {
         >
           Salir
         </button>
-
         <div className="relative">
           <button
             onClick={() => setOpen(!open)}

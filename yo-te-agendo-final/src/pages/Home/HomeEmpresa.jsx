@@ -1,531 +1,169 @@
-import React, { useState, useEffect } from "react";
-import { auth, db } from "../../firebase/firebaseConfig"; // 'storage' ya no se importa aquí para carga local
+import React, { useEffect, useState } from "react";
+import { auth, db, storage } from "../../firebase/firebaseConfig";
 import { signOut, onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-// Ya no se necesitan 'ref', 'uploadBytes', 'getDownloadURL' para carga local
-import { useNavigate, Link } from "react-router-dom";
+import { doc, getDoc, setDoc, collection, addDoc, getDocs, query, where, updateDoc, deleteDoc, orderBy, limit, onSnapshot } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { useNavigate } from "react-router-dom";
 import axios from 'axios';
-import { v4 as uuidv4 } from 'uuid';
-
-// ¡IMPORTANTE! Reemplaza con tu API Key de Google Maps
-const Maps_API_KEY = 'AIzaSyBOHDjSyttXWaTejNB9o-uTMcsx0_AvZNI'; // ¡Esta es tu clave de API real!
+import MiDatosEmpresa from "../../empresa/MiDatosEmpresa";
+import NotificacionesEmpresa from "../../empresa/NotificacionesEmpresa";
+import HomeEmpresaAgenda from "../../empresa/HomeEmpresaAgenda";
+import MisTrabajadores from "../../empresa/MisTrabajadores";
 
 function HomeEmpresa() {
-  const navigate = useNavigate();
-  const [modoEdicion, setModoEdicion] = useState(false);
-  const [empresaData, setEmpresaData] = useState(null);
-  const [uid, setUid] = useState(null);
-  const [direccion, setDireccion] = useState("");
-  const [loadingGeocode, setLoadingGeocode] = useState(false);
-  const [geocodeError, setGeocodeError] = useState(null);
+  const [user, setUser] = useState(null);
+  const [empresaData, setEmpresaData] = useState({});
+  const [servicios, setServicios] = useState([]);
+  const [personal, setPersonal] = useState([]);
+  const [reservas, setReservas] = useState([]);
+  const [loadingReservas, setLoadingReservas] = useState(false);
+  const [editandoPerfil, setEditandoPerfil] = useState(false);
+  const [modalServicio, setModalServicio] = useState(false);
+  const [modalPersonal, setModalPersonal] = useState(false);
+  const [nuevoServicio, setNuevoServicio] = useState({ nombre: '', precio: '', tiempo: '', descripcion: '', foto: '' });
+  const [nuevoPersonal, setNuevoPersonal] = useState({ nombre: '', apellido: '', especialidad: '', telefono: '', email: '', horarios: [], servicios: [] });
+  const [editandoServicio, setEditandoServicio] = useState(null);
+  const [editandoPersonal, setEditandoPersonal] = useState(null);
+  const [activeTab, setActiveTab] = useState('perfil');
   const [loading, setLoading] = useState(true);
-  const [uploadingImage, setUploadingImage] = useState(false); // Mantener para el estado de carga (aunque ahora es más rápido)
 
-  // Hook para monitorear el estado de autenticación y cargar datos de la empresa
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        setUid(user.uid);
-        const docRef = doc(db, "empresas", user.uid);
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          
-          const normalizedHorarios = data.horarios?.map(h => ({
-            ...h,
-            rangos: Array.isArray(h.rangos) && h.rangos.length > 0
-              ? h.rangos
-              : (h.desde || h.hasta) ? [{ horaInicio: h.desde || "", horaFin: h.hasta || "" }] : []
-          })) || [];
-
-          const initialUbicacion = data.ubicacion === undefined ? null : data.ubicacion;
-
-          setEmpresaData({ ...data, horarios: normalizedHorarios, ubicacion: initialUbicacion });
-          setDireccion(data.direccion || "");
-        } else {
-          setEmpresaData({
-            nombreEmpresa: "",
-            descripcion: "",
-            fotoPortada: "",
-            horarios: [],
-            contacto: { instagram: "", facebook: "", telefono: "" },
-            servicios: [],
-            direccion: "",
-            ubicacion: null,
-          });
-        }
-        setLoading(false);
+        setUser(user);
+        // Cargar datos de la empresa, servicios y personal
+        const fetchData = async () => {
+          setLoading(true);
+          try {
+            // Empresa
+            const empresaDoc = await getDoc(doc(db, "empresas", user.uid));
+            if (empresaDoc.exists()) {
+              const data = { id: empresaDoc.id, ...empresaDoc.data() };
+              console.log("Datos de empresa cargados:", data);
+              setEmpresaData(data);
+            } else {
+              console.log("No se encontró el documento de la empresa");
+            }
+            // Servicios
+            const serviciosQuery = query(collection(db, "servicios"), where("empresaId", "==", user.uid));
+            const serviciosSnapshot = await getDocs(serviciosQuery);
+            const serviciosData = serviciosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            console.log("Servicios cargados:", serviciosData); // <-- Log para depuración
+            setServicios(serviciosData);
+            // Personal
+            const personalQuery = query(collection(db, "personal"), where("empresaId", "==", user.uid));
+            const personalSnapshot = await getDocs(personalQuery);
+            const personalData = personalSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setPersonal(personalData);
+          } catch (error) {
+            console.error("Error al cargar datos: ", error);
+          }
+          setLoading(false);
+        };
+        fetchData();
       } else {
-        console.log("No hay usuario autenticado, redirigiendo a login.");
-        navigate("/login");
-        setLoading(false);
+        setUser(null);
+        setEmpresaData({});
+        setServicios([]);
+        setPersonal([]);
       }
     });
+
     return () => unsubscribe();
-  }, [navigate]);
+  }, []);
 
-  // Se elimina el useEffect para mostrar el token de ID, ya no es necesario.
-
-  const handleLogout = async () => {
-    await signOut(auth);
-    navigate("/login");
-  };
-
-  const geocodeAddress = async (address) => {
-    setLoadingGeocode(true);
-    setGeocodeError(null);
+  // Función para guardar todos los cambios del perfil
+  const guardarPerfilEmpresa = async () => {
+    if (!user?.uid) return;
     try {
-      if (!address.trim()) {
-        setGeocodeError("La dirección no puede estar vacía.");
-        return null;
-      }
-      const encodedAddress = encodeURIComponent(address);
-      const response = await axios.get(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${Maps_API_KEY}&region=cl`
-      );
-
-      if (response.data.status === 'OK' && response.data.results.length > 0) {
-        const { lat, lng } = response.data.results[0].geometry.location;
-        return { lat, lng };
-      } else if (response.data.status === 'ZERO_RESULTS') {
-        setGeocodeError("No se encontró la dirección. Intenta ser más específico.");
-        return null;
-      } else {
-        setGeocodeError(`Error al geocodificar: ${response.data.error_message || response.data.status}`);
-        return null;
-      }
-    } catch (error) {
-      console.error("Error al conectar con la API de geocodificación:", error);
-      setGeocodeError("Error de red o del servicio de geocodificación.");
-      return null;
-    } finally {
-      setLoadingGeocode(false);
-    }
-  };
-
-  const handleGuardar = async () => {
-    if (!uid) {
-      alert("No se pudo obtener el ID de usuario para guardar los cambios.");
-      return;
-    }
-
-    let nuevaUbicacion = empresaData.ubicacion;
-    
-    if (modoEdicion && direccion !== (empresaData?.direccion || "") && direccion.trim()) {
-      const coords = await geocodeAddress(direccion);
-      if (coords) {
-        nuevaUbicacion = coords;
-      } else {
-        alert("No se pudo verificar la dirección. Por favor, corrígela antes de guardar.");
-        return;
-      }
-    } else if (modoEdicion && !direccion.trim()) {
-        nuevaUbicacion = null;
-    }
-
-    try {
-      await setDoc(doc(db, "empresas", uid), {
+      // Guardar datos generales, horarios, redes sociales y ubicación
+      await setDoc(doc(db, "empresas", user.uid), {
         ...empresaData,
-        nombreEmpresa: empresaData.nombreEmpresa || "",
-        direccion,
-        ubicacion: nuevaUbicacion,
-        horarios: empresaData.horarios.map(h => ({
-            dia: h.dia,
-            rangos: h.rangos
-        })),
-        contacto: empresaData.contacto || { instagram: "", facebook: "", telefono: "" },
+        horarios: empresaData.horarios || [],
+        redesSociales: empresaData.redesSociales || {},
+        ubicacion: empresaData.ubicacion || {},
       }, { merge: true });
-
-      setModoEdicion(false);
-      setGeocodeError(null);
-      alert("¡Cambios guardados con éxito!");
+      alert("Perfil actualizado correctamente");
     } catch (error) {
-      console.error("Error al guardar empresa:", error);
-      alert("Error al guardar los cambios: " + error.message);
+      alert("Error al guardar perfil: " + error.message);
     }
   };
 
-  // --- Funciones para manejar la foto de portada (AHORA LOCAL) ---
-  const handleFotoUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    setUploadingImage(true); // Activa el estado de carga
-    try {
-      // Crea una URL de objeto para la previsualización local
-      const localURL = URL.createObjectURL(file);
-      
-      // Actualiza el estado local con la URL local
-      setEmpresaData((prevData) => ({ ...prevData, fotoPortada: localURL }));
-      
-      alert("Foto de portada cargada localmente para previsualización.");
-    } catch (error) {
-      console.error("Error al cargar la imagen localmente:", error);
-      alert("Error al cargar la foto de portada localmente: " + error.message);
-    } finally {
-      setUploadingImage(false); // Desactiva el estado de carga
-    }
-  };
-
-  // --- Funciones para manejar Horarios ---
-  const handleAgregarHorario = () => {
-    const nuevo = [...(empresaData.horarios || []), { dia: "Lunes", rangos: [{ horaInicio: "", horaFin: "" }] }];
-    setEmpresaData({ ...empresaData, horarios: nuevo });
-  };
-
-  const handleEliminarHorario = (index) => {
-    const nuevos = empresaData.horarios.filter((_, i) => i !== index);
-    setEmpresaData({ ...empresaData, horarios: nuevos });
-  };
-
-  const handleActualizarHorario = (index, field, value) => {
-    const nuevos = [...empresaData.horarios];
-    if (field === "desde" || field === "hasta") { 
-      if (!nuevos[index].rangos || nuevos[index].rangos.length === 0) {
-        nuevos[index].rangos = [{ horaInicio: "", horaFin: "" }];
-      }
-      if (field === "desde") nuevos[index].rangos[0].horaInicio = value;
-      if (field === "hasta") nuevos[index].rangos[0].horaFin = value;
-    } else {
-      nuevos[index][field] = value;
-    }
-    setEmpresaData({ ...empresaData, horarios: nuevos });
-  };
-
-  // --- Funciones para manejar Contacto ---
-  const handleContactoChange = (field, value) => {
-    setEmpresaData((prevData) => ({
-      ...prevData,
-      contacto: { ...(prevData.contacto || {}), [field]: value },
-    }));
-  };
-
-  // --- Funciones para manejar Servicios ---
-  const handleAgregarServicio = () => {
-    const nuevoServicio = {
-      id: uuidv4(),
-      nombre: "",
-      descripcion: "",
-      tiempo: "", 
-      precio: "",
-      icono: "✂️",
-      imagen: "",
-    };
-    setEmpresaData({ ...empresaData, servicios: [...(empresaData.servicios || []), nuevoServicio] });
-  };
-
-  const handleActualizarServicio = (index, field, value) => {
-    const nuevos = [...empresaData.servicios];
-    nuevos[index][field] = value;
-    setEmpresaData({ ...empresaData, servicios: nuevos });
-  };
-
-  const handleEliminarServicio = (index) => {
-    const nuevos = empresaData.servicios.filter((_, i) => i !== index);
-    setEmpresaData({ ...empresaData, servicios: nuevos });
-  };
-
-  // --- Renderizado Condicional ---
-  if (loading || !empresaData) {
-    return <p className="text-center mt-10 text-gray-500">Cargando datos de la empresa...</p>;
-  }
+  if (loading) return <div className="text-center py-8">Cargando datos...</div>;
 
   return (
-    <div className="max-w-5xl mx-auto p-4">
-      {/* Sección de Portada */}
-      <div className="relative h-56 bg-gray-200 rounded-lg overflow-hidden mb-16 shadow-md">
-        {empresaData.fotoPortada ? (
-          <img src={empresaData.fotoPortada} alt="Portada de la empresa" className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-100 text-gray-500">
-            Cargar foto de portada
-          </div>
-        )}
-        {modoEdicion && (
-          <label className="absolute top-4 right-4 bg-white rounded-full p-3 cursor-pointer shadow-lg hover:bg-gray-50 transition">
-            {uploadingImage ? 'Cargando...' : '📷'}
-            <input 
-              type="file" 
-              className="hidden" 
-              onChange={handleFotoUpload} 
-              accept="image/*" 
-              disabled={uploadingImage}
-            />
-          </label>
-        )}
-      </div>
-
-      {/* Botones de Acción */}
-      <div className="flex flex-wrap gap-4 mb-8">
-        <button
-          onClick={() => {
-            if (modoEdicion) handleGuardar();
-            else setModoEdicion(true);
-          }}
-          className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition shadow-md flex items-center justify-center min-w-[150px]"
-          disabled={loadingGeocode || uploadingImage}
-        >
-          {modoEdicion ? (loadingGeocode ? "Verificando Dirección..." : "Guardar Cambios") : "Editar Perfil"}
-        </button>
-
-        {uid && (
-          <Link
-            to={`/empresa/${uid}`}
-            className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition shadow-md flex items-center justify-center min-w-[150px]"
-          >
-            Ver mi Perfil Público
-          </Link>
-        )}
-
-        <button
-          onClick={() => navigate("/home-empresa/agenda")}
-          className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition shadow-md flex items-center justify-center min-w-[150px]"
-        >
-          Ver agenda
-        </button>
-
-        <button
-          onClick={handleLogout}
-          className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg transition shadow-md flex items-center justify-center min-w-[150px]"
-        >
-          Cerrar sesión
-        </button>
-      </div>
-
-      {geocodeError && (
-          <p className="text-red-600 text-sm mt-2 mb-4 p-2 bg-red-100 rounded border border-red-200">{geocodeError}</p>
-      )}
-
-      {/* Descripción de la Empresa */}
-      <div className="bg-white rounded-lg shadow p-6 mb-6 border border-gray-200">
-        <h2 className="text-xl font-semibold mb-3 text-gray-800">Descripción</h2>
-        {modoEdicion ? (
-          <textarea
-            className="w-full border border-gray-300 rounded-md p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y"
-            rows="4"
-            value={empresaData.descripcion || ""}
-            onChange={(e) => setEmpresaData({ ...empresaData, descripcion: e.target.value })}
-            placeholder="Escribe una descripción de tu empresa..."
-          />
-        ) : (
-          <p className="text-gray-700 whitespace-pre-wrap">{empresaData.descripcion || "Sin descripción."}</p>
-        )}
-      </div>
-
-      {/* Horarios de Atención */}
-      <div className="bg-white rounded-lg shadow p-6 mb-6 border border-gray-200">
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="text-xl font-semibold text-gray-800">Horarios de Atención</h2>
-          {modoEdicion && (
-            <button 
-              onClick={handleAgregarHorario} 
-              className="text-indigo-600 font-semibold flex items-center gap-1 hover:text-indigo-800 transition"
+    <div className="min-h-screen flex flex-col items-center justify-center text-center bg-gradient-to-r from-indigo-200 via-purple-100 to-pink-100 p-2 sm:p-6">
+      {/* Menú fijo arriba, deslizable en móvil */}
+      {/* Menú solo móvil: fijo, compacto, scroll, icono salir */}
+      <nav className="flex sm:hidden fixed top-0 left-0 w-full z-30 flex-row justify-between items-center px-4 py-3 rounded-b-2xl shadow-lg bg-white/90 backdrop-blur border-b border-white/40 max-w-full mx-auto" style={{ WebkitOverflowScrolling: 'touch', overflowX: 'hidden' }}>
+        <div className="flex flex-row gap-1 w-full min-w-[320px]">
+          {[
+            { tab: 'perfil', label: 'Mis Datos' },
+            { tab: 'agenda', label: 'Agenda' },
+            { tab: 'trabajadores', label: 'Trabajadores' },
+            { tab: 'notificaciones', label: 'Notificaciones' }
+          ].map(({ tab, label }) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`flex-shrink-0 px-2 py-2 rounded-xl transition-all font-semibold text-xs whitespace-nowrap ${activeTab === tab ? `bg-purple-500 text-white shadow` : `text-purple-700 hover:bg-purple-100`}`}
+              style={{ minWidth: 80 }}
             >
-              + Agregar Horario
+              {label}
             </button>
-          )}
-        </div>
-        {empresaData.horarios.length === 0 && <p className="text-gray-600">No hay horarios registrados.</p>}
-        {empresaData.horarios.map((h, i) => (
-          <div key={i} className="flex flex-wrap items-center gap-3 mb-3 p-2 bg-gray-50 rounded-md border border-gray-100">
-            {modoEdicion ? (
-              <>
-                <select
-                  value={h.dia}
-                  className="border border-gray-300 p-2 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  onChange={(e) => handleActualizarHorario(i, "dia", e.target.value)}
-                >
-                  {["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"].map((dia) => (
-                    <option key={dia} value={dia}>{dia}</option>
-                  ))}
-                </select>
-                <input
-                  type="time"
-                  value={h.rangos[0]?.horaInicio || ""} 
-                  onChange={(e) => handleActualizarHorario(i, "desde", e.target.value)}
-                  className="border border-gray-300 p-2 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-                <span>-</span>
-                <input
-                  type="time"
-                  value={h.rangos[0]?.horaFin || ""}
-                  onChange={(e) => handleActualizarHorario(i, "hasta", e.target.value)}
-                  className="border border-gray-300 p-2 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                />
-                <button 
-                  onClick={() => handleEliminarHorario(i)} 
-                  className="text-red-600 hover:text-red-800 transition text-xl p-1" 
-                  title="Eliminar horario"
-                >
-                  🗑️
-                </button>
-              </>
-            ) : (
-              <p className="text-gray-700">
-                🕒 <span className="font-semibold">{h.dia}:</span>{" "}
-                {h.rangos.length > 0 ? `${h.rangos[0].horaInicio} - ${h.rangos[0].horaFin}` : "Cerrado"}
-              </p>
-            )}
-          </div>
-        ))}
-      </div>
-
-      {/* Información de Contacto */}
-      <div className="bg-white rounded-lg shadow p-6 mb-6 border border-gray-200">
-        <h2 className="text-xl font-semibold mb-3 text-gray-800">Información de Contacto</h2>
-        {modoEdicion ? (
-          <div className="space-y-3">
-            <input
-              placeholder="Instagram (ej. @miempresa)"
-              value={empresaData.contacto?.instagram || ""}
-              className="w-full border border-gray-300 p-3 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              onChange={(e) => handleContactoChange("instagram", e.target.value)}
-            />
-            <input
-              placeholder="Facebook (ej. MiEmpresaOficial)"
-              value={empresaData.contacto?.facebook || ""}
-              className="w-full border border-gray-300 p-3 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              onChange={(e) => handleContactoChange("facebook", e.target.value)}
-            />
-            <input
-              placeholder="Teléfono (ej. +56912345678)"
-              value={empresaData.contacto?.telefono || ""}
-              className="w-full border border-gray-300 p-3 rounded-md text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              onChange={(e) => handleContactoChange("telefono", e.target.value)}
-            />
-          </div>
-        ) : (
-          <ul className="text-gray-700 space-y-2">
-            <li><strong>Instagram:</strong> {empresaData.contacto?.instagram || "No disponible"}</li>
-            <li><strong>Facebook:</strong> {empresaData.contacto?.facebook || "No disponible"}</li>
-            <li><strong>Teléfono:</strong> {empresaData.contacto?.telefono || "No disponible"}</li>
-          </ul>
-        )}
-      </div>
-
-      {/* Sección de Servicios */}
-      <div className="bg-white rounded-lg shadow p-6 mb-6 border border-gray-200">
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="text-xl font-semibold text-gray-800">Nuestros Servicios</h2>
-          {modoEdicion && (
-            <button 
-              onClick={handleAgregarServicio} 
-              className="text-indigo-600 font-semibold flex items-center gap-1 hover:text-indigo-800 transition"
-            >
-              + Agregar Servicio
-            </button>
-          )}
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {empresaData.servicios.length === 0 && !modoEdicion && <p className="col-span-full text-gray-600">No hay servicios registrados.</p>}
-          {empresaData.servicios.map((s, i) => (
-            <div key={s.id || i} className="border border-indigo-100 rounded-xl p-4 bg-indigo-50 relative shadow-sm">
-              {modoEdicion ? (
-                <>
-                  <button 
-                    onClick={() => handleEliminarServicio(i)} 
-                    className="absolute top-2 right-2 text-red-500 hover:text-red-700 transition text-xl"
-                    title="Eliminar servicio"
-                  >
-                    🗑️
-                  </button>
-                  <label className="block mb-2">
-                    <span className="text-gray-600 text-sm">Ícono (Emoji):</span>
-                    <input
-                      value={s.icono || ""}
-                      onChange={(e) => handleActualizarServicio(i, "icono", e.target.value)}
-                      className="text-3xl w-full p-2 border border-gray-300 rounded-md bg-white text-center"
-                      placeholder="Ej. ✂️"
-                    />
-                  </label>
-                  <label className="block mb-2">
-                    <span className="text-gray-600 text-sm">Nombre:</span>
-                    <input
-                      placeholder="Nombre del servicio"
-                      value={s.nombre || ""}
-                      onChange={(e) => handleActualizarServicio(i, "nombre", e.target.value)}
-                      className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
-                  </label>
-                  <label className="block mb-2">
-                    <span className="text-gray-600 text-sm">Duración (min):</span>
-                    <input
-                      placeholder="Tiempo en minutos"
-                      value={s.tiempo || ""}
-                      onChange={(e) => handleActualizarServicio(i, "tiempo", e.target.value)}
-                      className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      type="number"
-                    />
-                  </label>
-                  <label className="block mb-2">
-                    <span className="text-gray-600 text-sm">Precio ($):</span>
-                    <input
-                      placeholder="Precio del servicio"
-                      value={s.precio || ""}
-                      onChange={(e) => handleActualizarServicio(i, "precio", e.target.value)}
-                      className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      type="number"
-                    />
-                  </label>
-                   <label className="block mb-2">
-                    <span className="text-gray-600 text-sm">Descripción:</span>
-                    <textarea
-                      placeholder="Breve descripción del servicio"
-                      value={s.descripcion || ""}
-                      onChange={(e) => handleActualizarServicio(i, "descripcion", e.target.value)}
-                      className="w-full border border-gray-300 rounded-md p-2 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-y"
-                    />
-                  </label>
-                </>
-              ) : (
-                <>
-                  <div className="text-4xl mb-2">{s.icono || "✨"}</div>
-                  <h3 className="font-bold text-lg text-indigo-700">{s.nombre || "Servicio"}</h3>
-                  <p className="text-sm text-gray-600">{s.descripcion || "Sin descripción."}</p>
-                  <p className="text-sm text-gray-700 mt-2">🕒 {s.tiempo || "N/A"} min</p>
-                  <p className="text-base text-indigo-800 font-bold">💲{s.precio || "N/A"}</p>
-                </>
-              )}
-            </div>
           ))}
         </div>
-      </div>
-
-      {/* Dirección y Ubicación */}
-      <div className="bg-white rounded-lg shadow p-6 border border-gray-200">
-        <h2 className="text-xl font-semibold mb-3 text-gray-800">Dirección y Ubicación</h2>
-        {modoEdicion ? (
-          <>
-            <input
-              placeholder="Dirección completa (ej. Av. Siempre Viva 742, Springfield)"
-              value={direccion}
-              onChange={(e) => setDireccion(e.target.value)}
-              className="w-full border border-gray-300 rounded-md p-3 text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              disabled={loadingGeocode}
-            />
-          </>
-        ) : (
-          <p className="text-gray-700">{empresaData.direccion || "No disponible"}</p>
+        <button
+          onClick={() => {
+            signOut(auth);
+            window.location.href = "/";
+          }}
+          className="flex-shrink-0 p-1 rounded-full bg-gray-200 hover:bg-gray-300 flex items-center justify-center ml-2"
+          style={{ minWidth: 32, minHeight: 32 }}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" /></svg>
+        </button>
+      </nav>
+      {/* Menú escritorio: normal, más espacio, no fijo */}
+      <nav className="hidden sm:flex flex-row gap-4 px-4 py-3 rounded-2xl shadow-lg bg-white/80 backdrop-blur border border-white/40 mb-6 items-center w-full max-w-2xl mx-auto">
+        {[
+          { tab: 'perfil', label: 'Mis Datos' },
+          { tab: 'agenda', label: 'Agenda' },
+          { tab: 'trabajadores', label: 'Trabajadores' },
+          { tab: 'notificaciones', label: 'Notificaciones' }
+        ].map(({ tab, label }) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`px-4 py-2 rounded-xl transition-all font-semibold text-base whitespace-nowrap ${activeTab === tab ? `bg-purple-500 text-white shadow` : `text-purple-700 hover:bg-purple-100`}`}
+          >
+            {label}
+          </button>
+        ))}
+        <button
+          onClick={() => {
+            signOut(auth);
+            window.location.href = "/";
+          }}
+          className="ml-4 px-4 py-2 rounded-xl font-semibold bg-gradient-to-r from-red-500 to-pink-500 text-white shadow transition-all hover:from-red-600 hover:to-pink-600 flex items-center gap-2 text-base"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" /></svg>
+          Salir
+        </button>
+      </nav>
+  {/* Espacio para el menú fijo solo en móvil */}
+  <div className="pt-16 sm:pt-0 w-full max-w-md sm:max-w-3xl mx-auto px-2 sm:px-4 pb-2">
+        {activeTab === "perfil" && (
+          <MiDatosEmpresa empresaData={empresaData} servicios={servicios} personal={personal} />
         )}
-
-        {empresaData.ubicacion?.lat && empresaData.ubicacion?.lng && (
-            <div className="mt-6">
-              <p className="text-gray-700 mb-2">Ubicación en el mapa:</p>
-              {/* URL CORREGIDA para el iframe de Google Maps Embed API */}
-              <iframe
-                className="w-full h-64 rounded-lg shadow-md"
-                // Usa la API de Maps Embed: https://developers.google.com/maps/documentation/embed/get-started
-                // q= para búsqueda de dirección/latlng, key= tu_api_key
-                src={`https://www.google.com/maps/embed/v1/place?key=${Maps_API_KEY}&q=${empresaData.ubicacion.lat},${empresaData.ubicacion.lng}`}
-                loading="lazy"
-                allowFullScreen
-                title="mapa de ubicación de la empresa"
-              />
-            </div>
+        {activeTab === "agenda" && (
+          <HomeEmpresaAgenda empresaId={user?.uid} personal={personal} servicios={servicios} />
         )}
-        {!modoEdicion && (!empresaData.ubicacion?.lat || !empresaData.ubicacion?.lng) && (
-            <p className="text-gray-600 mt-4">Ubicación en el mapa no disponible.</p>
+        {activeTab === "trabajadores" && (
+          <MisTrabajadores personal={personal} servicios={servicios} />
+        )}
+        {activeTab === "notificaciones" && (
+          <NotificacionesEmpresa empresaId={user?.uid} />
         )}
       </div>
     </div>
