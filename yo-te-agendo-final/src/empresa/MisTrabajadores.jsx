@@ -31,7 +31,9 @@ const MisTrabajadores = ({ servicios = [], onAdd, onEdit, onDelete }) => {
           // Mapear array de IDs a nombres
           let serviciosNombres = [];
           if (Array.isArray(data.servicios)) {
-            serviciosNombres = data.servicios.map(sid => serviciosMap[sid] ? serviciosMap[sid] : 'Servicio no encontrado');
+            serviciosNombres = data.servicios
+              .filter(sid => typeof sid === 'string') // Filtrar solo strings válidos
+              .map(sid => serviciosMap[sid] ? serviciosMap[sid] : 'Servicio no encontrado');
           }
           // Asegurar horarios como array
           let horarios = Array.isArray(data.horarios) ? data.horarios : [];
@@ -167,7 +169,9 @@ const MisTrabajadores = ({ servicios = [], onAdd, onEdit, onDelete }) => {
           const data = doc.data();
           let serviciosNombres = [];
           if (Array.isArray(data.servicios)) {
-            serviciosNombres = data.servicios.map(sid => serviciosMap[sid] ? serviciosMap[sid] : 'Servicio no encontrado');
+            serviciosNombres = data.servicios
+              .filter(sid => typeof sid === 'string') // Filtrar solo strings válidos
+              .map(sid => serviciosMap[sid] ? serviciosMap[sid] : 'Servicio no encontrado');
           }
           let horarios = Array.isArray(data.horarios) ? data.horarios : [];
           return {
@@ -236,10 +240,115 @@ const MisTrabajadores = ({ servicios = [], onAdd, onEdit, onDelete }) => {
       {trabajadores.length === 0 ? (
         <div className="text-center text-gray-500 py-8">No hay trabajadores registrados.</div>
       ) : (
-  <div className="flex flex-row gap-3 overflow-x-auto pb-2 w-full justify-center mx-auto sm:flex-wrap sm:overflow-x-visible">
+        <div className="space-y-4">
           {trabajadores.map((trab, idx) => (
-            <div key={trab.id || idx} className="min-w-[260px] max-w-xs flex-shrink-0">
-              <MinimalistaTrabajadorCard trabajador={trab} onEdit={() => openModal(idx)} onDelete={() => handleDelete(idx)} />
+            <div key={trab.id || idx} className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 hover:shadow-md transition-shadow">
+              <div className="flex items-center gap-4">
+                {/* Avatar */}
+                <div className="flex-shrink-0">
+                  {trab.fotoPerfil ? (
+                    <img
+                      src={trab.fotoPerfil}
+                      alt={trab.nombre + ' ' + trab.apellido}
+                      className="w-16 h-16 rounded-full object-cover border border-gray-200 shadow"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 rounded-full flex items-center justify-center bg-gradient-to-r from-indigo-200 via-purple-100 to-pink-100 border border-gray-200 shadow">
+                      <span className="text-gray-400 text-lg font-semibold">
+                        {trab.nombre?.charAt(0) || 'T'}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Información principal */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-lg font-semibold text-gray-900 truncate">
+                      {trab.nombre} {trab.apellido}
+                    </h3>
+                    <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
+                      {trab.especialidad || 'Sin especialidad'}
+                    </span>
+                  </div>
+                  
+                  <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                    <div className="flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                      </svg>
+                      {trab.telefono || 'Sin teléfono'}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      {trab.email || 'Sin email'}
+                    </div>
+                  </div>
+
+                  {/* Servicios */}
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-xs font-medium text-gray-500">Servicios:</span>
+                    <div className="flex flex-wrap gap-1">
+                      {trab.servicios && trab.servicios.length > 0 ? (
+                        trab.servicios.slice(0, 3).map((serv, i) => (
+                          <span key={i} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
+                            {serv}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-gray-400">Sin servicios</span>
+                      )}
+                      {trab.servicios && trab.servicios.length > 3 && (
+                        <span className="text-xs text-gray-500">+{trab.servicios.length - 3} más</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Horarios */}
+                  <div className="flex items-start gap-2">
+                    <span className="text-xs font-medium text-gray-500 mt-1">Horarios:</span>
+                    <div className="flex flex-wrap gap-1 max-w-xs">
+                      {trab.horarios && trab.horarios.length > 0 ? (
+                        trab.horarios.map((h, i) => (
+                          <span key={i} className={`px-1.5 py-0.5 text-xs rounded-full ${
+                            h.habilitado !== false 
+                              ? 'bg-green-100 text-green-700' 
+                              : 'bg-gray-100 text-gray-500'
+                          }`}>
+                            {h.dia?.substring(0, 3)}: {h.horaInicio}-{h.horaFin}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-gray-400">Sin horarios</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Botones de acción */}
+                <div className="flex-shrink-0 flex items-center gap-2">
+                  <button
+                    className="p-2 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
+                    title="Editar"
+                    onClick={() => openModal(idx)}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16.862 5.487a2.1 2.1 0 1 1 2.97 2.97L8.5 19.79l-4 1 1-4 11.362-11.303Z" />
+                    </svg>
+                  </button>
+                  <button
+                    className="p-2 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition-colors"
+                    title="Eliminar"
+                    onClick={() => handleDelete(idx)}
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
             </div>
           ))}
         </div>

@@ -1,7 +1,7 @@
 import React from "react";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
-import useNotificacionesUsuario from "../hooks/useNotificacionesUsuario";
+import { useNotificacionesUsuario } from "../hooks";
 import { auth } from "../firebase/firebaseConfig";
 
 export default function NotificacionesUsuario() {
