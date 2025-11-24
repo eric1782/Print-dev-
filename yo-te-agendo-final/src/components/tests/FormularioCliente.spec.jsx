@@ -18,7 +18,7 @@ describe('FormularioCliente Component', () => {
 
   const mockOnChange = jest.fn();
 
-  it('should render all form fields correctly', () => {
+  it('manejo del renderizado de todos los campos del formulario', () => {
     render(
       <FormularioCliente
         form={mockForm}
@@ -41,7 +41,7 @@ describe('FormularioCliente Component', () => {
     expect(screen.getByPlaceholderText('tu@email.com')).toBeInTheDocument();
   });
 
-  it('should display validation errors when present', () => {
+  it('manejo de visualizacion de errores cuando un campo no tenga informacion correcta', () => {
     const validacionesConError = {
       nombre: 'El nombre es requerido',
       rut: 'RUT inválido',

@@ -3,7 +3,7 @@ import SuccessMessage from '../common/SuccessMessage.jsx';
 
 describe('SuccessMessage Component', () => {
   // Prueba básica de renderizado del mensaje
-  it('should render success message correctly', () => {
+  it('manejo del mensaje de exito', () => {
     const message = 'Operación completada con éxito';
     render(<SuccessMessage message={message} />);
     
@@ -13,7 +13,7 @@ describe('SuccessMessage Component', () => {
   });
 
   // Prueba del botón de cerrar
-  it('should call onClose when close button is clicked', () => {
+  it('manejo del boton de cerrar y verificar que cierre', () => {
     const onClose = jest.fn();
     render(<SuccessMessage message="Test" onClose={onClose} />);
     

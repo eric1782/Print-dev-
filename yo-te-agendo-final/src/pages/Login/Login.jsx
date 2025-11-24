@@ -102,7 +102,7 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-r from-indigo-200 via-purple-100 to-pink-100">
+    <div className="min-h-screen bg-image flex flex-col">
       {/* Contenido principal - Ocupa toda la pantalla */}
       <main className="min-h-screen flex items-center justify-center px-6">
         <form onSubmit={handleSubmit} className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 w-full max-w-md">

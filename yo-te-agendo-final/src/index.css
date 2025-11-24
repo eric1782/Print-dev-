@@ -22,3 +22,12 @@
     scrollbar-width: thin;
     scrollbar-color: #6366f1 transparent;
 }
+
+.bg-image {
+    height: 100vh;
+    background: linear-gradient(rgba(174, 190, 255, 0.868), rgba(250, 155, 255, 0.868)), 
+                url('https://gestiondeltiempo.website/wp-content/uploads/2024/07/agendas-y-planificadores.webp');
+    background-attachment: fixed;
+    background-position: center;
+    background-size: cover;
+}

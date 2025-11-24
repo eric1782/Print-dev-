@@ -8,7 +8,7 @@ describe('CalendarioSemanal Component', () => {
   ];
 
   // Prueba de navegación entre semanas
-  it('should handle week navigation', () => {
+  it('manejo de navegacion semanal', () => {
     const onSemanaSiguiente = jest.fn();
     const onSemanaAnterior = jest.fn();
 
@@ -35,7 +35,7 @@ describe('CalendarioSemanal Component', () => {
   });
 
   // Prueba de selección de día
-  it('should handle day selection', () => {
+  it('manejo de seleccion de dia', () => {
     const onSeleccionarDia = jest.fn();
 
     render(

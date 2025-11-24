@@ -8,7 +8,7 @@ describe('SeleccionHorario Component', () => {
   };
 
   // Prueba de renderizado sin horarios disponibles
-  it('should show message when no hours available', () => {
+  it('muestra mensaje cuando no hay horas disponibles', () => {
     render(
       <SeleccionHorario
         horariosDisponibles={[]}
@@ -22,7 +22,7 @@ describe('SeleccionHorario Component', () => {
   });
 
   // Prueba de selección de horario
-  it('should handle hour selection', () => {
+  it('manejo de seleccion de horarios', () => {
     const onSeleccionarHora = jest.fn();
     const horariosDisponibles = [
       { hora: '10:00', ocupado: false },

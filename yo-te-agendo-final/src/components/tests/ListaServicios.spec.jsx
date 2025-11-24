@@ -13,13 +13,13 @@ describe('ListaServicios Component', () => {
   ];
 
   // Prueba de mensaje cuando no hay servicios
-  it('should show empty message when no services', () => {
+  it('manejo de mensaje cuando no hay servicios disponibles', () => {
     render(<ListaServicios servicios={[]} onServicioClick={() => {}} />);
     expect(screen.getByText('No hay servicios disponibles')).toBeInTheDocument();
   });
 
   // Prueba de renderizado de servicios
-  it('should render service information correctly', () => {
+  it('manejo de renderizado de informacion de servicio', () => {
     render(<ListaServicios servicios={mockServicios} onServicioClick={() => {}} />);
 
     // Verifica que la información del servicio esté presente
@@ -30,7 +30,7 @@ describe('ListaServicios Component', () => {
   });
 
   // Prueba de click en un servicio
-  it('should handle service click', () => {
+  it('manejo del click al darle a un servicio', () => {
     const onServicioClick = jest.fn();
     render(<ListaServicios servicios={mockServicios} onServicioClick={onServicioClick} />);
 
