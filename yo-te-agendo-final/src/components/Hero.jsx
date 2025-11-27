@@ -14,7 +14,7 @@ function Hero() {
         ¡Inscribete fácil y rápido!
         </p>
         <a
-        href="#contacto"
+        href="/login"
         className="bg-white text-indigo-600 font-bold py-4 px-8 rounded-xl shadow-xl hover:bg-indigo-50 transition-all duration-300 transform hover:scale-105 border-2 border-indigo-600"
         >
         Agenda tu Cita

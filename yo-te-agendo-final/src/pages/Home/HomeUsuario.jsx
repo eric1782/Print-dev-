@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { auth } from "../../firebase/firebaseConfig";
 import { useReservas, useEmpresas, useModal } from "../../hooks";
 import NotificacionesUsuario from "../../usuario/NotificacionesUsuario";
 import ReservarPopup from "../../components/ReservarPopup";
@@ -30,8 +29,6 @@ function HomeUsuario() {
     loading: loadingEmpresas, 
     buscarEmpresas 
   } = useEmpresas();
-
-  const user = auth.currentUser;
 
   // Solicitud de edición de cita
   const solicitarEdicionCita = ({ id, nuevaFecha, mensaje, empresaId, servicio }) => {
@@ -74,7 +71,7 @@ function HomeUsuario() {
   }));
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-r from-indigo-200 via-purple-100 to-pink-100">
       {/* Navegación */}
       <NavbarUsuario 
         vistaActual={vistaActual}

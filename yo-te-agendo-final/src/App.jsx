@@ -2,12 +2,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 // Landing Page
-import Header from "./components/Header";
-import Hero from "./components/Hero";
-import QuienesSomos from "./pages/Landing/QuienesSomos";
-import Servicios from "./pages/Landing/Servicios";
-import Contacto from "./pages/Landing/Contacto";
-import Footer from "./components/Footer";
+import LandingPage from "./pages/Landing/LandingPage";
 
 // Autenticación
 import Login from "./pages/Login/Login";
@@ -31,19 +26,7 @@ function App() {
     <Router>
       <Routes>
         {/* Landing Page */}
-        <Route
-          path="/"
-          element={
-            <>
-              <Header />
-              <Hero />
-              <QuienesSomos />
-              <Servicios />
-              <Contacto />
-              <Footer />
-            </>
-          }
-        />
+        <Route path="/" element={<LandingPage />} />
 
         {/* Autenticación */}
         <Route path="/login" element={<Login />} />
