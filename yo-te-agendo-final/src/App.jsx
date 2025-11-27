@@ -11,6 +11,7 @@ import Registro from "./pages/Login/Registro";
 // Dashboards
 import HomeUsuario from "./pages/Home/HomeUsuario";
 import HomeEmpresa from "./pages/Home/HomeEmpresa";
+import HomeAdmin from "./pages/Home/HomeAdmin";
 import HomeEmpresaAgenda from "./empresa/HomeEmpresaAgenda";
 
 // Perfil Empresa Público
@@ -35,6 +36,7 @@ function App() {
         {/* Dashboards */}
         <Route path="/home-usuario" element={<HomeUsuario />} />
         <Route path="/home-empresa" element={<HomeEmpresa />} />
+        <Route path="/home-admin" element={<HomeAdmin />} />
         <Route path="/home-empresa/agenda" element={<HomeEmpresaAgenda />} />
 
         {/* Perfil público empresa */}
