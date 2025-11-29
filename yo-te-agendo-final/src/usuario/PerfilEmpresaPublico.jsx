@@ -91,7 +91,7 @@ function PerfilEmpresaPublico() {
   if (!empresaData) return null; //si no hay datos de la empresa, se retorna null 
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-r from-indigo-200 via-purple-100 to-pink-100">
       {/* Header con foto de portada */}
       <HeaderEmpresa empresaData={empresaData} />
 

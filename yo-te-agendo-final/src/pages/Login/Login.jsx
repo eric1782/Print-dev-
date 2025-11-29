@@ -1,10 +1,11 @@
 // Login.jsx
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "../../firebase/firebaseConfig.js";
 import Footer from "../../components/Footer.jsx";
+import { XCircle } from "lucide-react";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -20,10 +21,7 @@ function Login() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const uid = userCredential.user.uid;
 
-      // -----------------------------------------------------------
-      // 1. VERIFICAR SI ES ADMIN (Colección 'admins')
-      // -----------------------------------------------------------
-      // Es buena práctica chequear privilegios altos primero o por separado
+      // 1. ADMINS 
       const adminRef = doc(db, "admins", uid);
       const adminSnap = await getDoc(adminRef);
 
@@ -32,32 +30,50 @@ function Login() {
         return;
       }
 
-      // -----------------------------------------------------------
-      // 2. VERIFICAR SI ES USUARIO (Colección 'usuarios')
-      // -----------------------------------------------------------
+      // 2. USUARIOS
       const usuarioRef = doc(db, "usuarios", uid);
       const usuarioSnap = await getDoc(usuarioRef);
 
       if (usuarioSnap.exists()) {
+         const userData = usuarioSnap.data();
+         
+         // VERIFICAMOS SI ESTÁ BLOQUEADO
+         if (userData.bloqueado) {
+            await signOut(auth);
+            setError("Tu cuenta ha sido bloqueada por un administrador. Por favor, contacta a soporte.");
+            return;
+         }
+
          navigate("/home-usuario");
          return;
       }
 
-      // -----------------------------------------------------------
-      // 3. VERIFICAR SI ES EMPRESA (Colección 'empresas')
-      // -----------------------------------------------------------
+      // 3. EMPRESAS
       const empresaRef = doc(db, "empresas", uid);
       const empresaSnap = await getDoc(empresaRef);
 
       if (empresaSnap.exists()) {
-        navigate("/home-empresa");
-        return;
+        const userData = empresaSnap.data();
+
+        if (userData.rol === "admin") {
+           navigate("/home-admin");
+           return;
+        }
+
+        // VERIFICAMOS SI ESTÁ BLOQUEADO
+        if (userData.bloqueado) {
+            await signOut(auth);
+            setError("El acceso de esta empresa ha sido suspendido por la administración.");
+            return;
+        }
+
+        if (userData.rol === "empresa" || !userData.rol) {
+          navigate("/home-empresa");
+          return;
+        }
       }
 
-      // -----------------------------------------------------------
-      // 4. SI NO EXISTE EN NINGUNO -> CREAR NUEVA EMPRESA
-      // (Asumimos que un registro nuevo sin datos previos es una empresa)
-      // -----------------------------------------------------------
+      // 4. CREACIÓN DE NUEVA EMPRESA 
       try {
         const empresaData = {
           nombreEmpresa: "Empresa Nueva",
@@ -66,10 +82,11 @@ function Login() {
           descripcion: "Descripción de la empresa",
           fechaCreacion: new Date(),
           activo: true,
+          // Al crearla ta desbloqueada de default
+          bloqueado: false, 
           redesSociales: { instagram: "", facebook: "", whatsapp: "" },
-          horarios: [ /* ... tus horarios ... */ ]
+          horarios: [ /* ... */ ]
         };
-
         await setDoc(doc(db, "empresas", uid), empresaData);
         navigate("/home-empresa");
         return;
@@ -78,34 +95,53 @@ function Login() {
       }
 
     } catch (err) {
-      // ... (Mismo manejo de errores de siempre)
-      setError("Error al iniciar sesión: " + err.message);
+      // Manejo de errores
+      if (err.message === "BLOCK_ACCESS") {
+         return;
+      }
+
+      switch (err.code) {
+        case "auth/user-not-found":
+        case "auth/wrong-password":
+        case "auth/invalid-credential":
+          setError("Correo o contraseña incorrectos.");
+          break;
+        case "auth/too-many-requests":
+          setError("Demasiados intentos. Intenta más tarde.");
+          break;
+        default:
+          setError(`Error: ${err.message}`);
+      }
     }
   };
 
   return (
     <div className="min-h-screen bg-image flex flex-col">
-      {/* Contenido principal - Ocupa toda la pantalla */}
       <main className="min-h-screen flex items-center justify-center px-6">
         <form onSubmit={handleSubmit} className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 w-full max-w-md">
           <h2 className="text-3xl font-bold text-center text-indigo-600 mb-8">Iniciar Sesión</h2>
 
-          {error && <p className="text-red-600 text-sm mb-6 p-3 bg-red-50 rounded-lg border border-red-200">{error}</p>}
+          {/* MENSAJE DE ERROR / BLOQUEO */}
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 rounded-xl border border-red-200 flex items-start gap-3 animate-in slide-in-from-top-2">
+              <XCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <p className="text-red-700 text-sm font-medium">{error}</p>
+            </div>
+          )}
 
           <div className="space-y-6">
             <input
               type="email"
               placeholder="Correo electrónico"
-              className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+              className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
-
             <input
               type="password"
               placeholder="Contraseña"
-              className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+              className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all outline-none"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -124,7 +160,6 @@ function Login() {
               ¿No tienes cuenta? Regístrate aquí
             </Link>
           </div>
-
           <div className="text-center mt-4">
             <Link to="/" className="text-sm text-indigo-600 hover:text-indigo-800 hover:underline transition">
               ← Regresar a Inicio
@@ -132,8 +167,6 @@ function Login() {
           </div>
         </form>
       </main>
-
-      {/* Footer - Solo aparece al hacer scroll */}
       <Footer />
     </div>
   );
