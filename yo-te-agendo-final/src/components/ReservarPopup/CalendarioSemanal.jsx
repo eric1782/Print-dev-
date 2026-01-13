@@ -19,6 +19,7 @@ const CalendarioSemanal = ({
       <div className="flex items-center justify-between">
         <button
           onClick={onSemanaAnterior}
+          aria-label="Semana anterior"
           className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
         >
           <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -38,6 +39,7 @@ const CalendarioSemanal = ({
         </div>
         <button
           onClick={onSemanaSiguiente}
+          aria-label="Semana siguiente"
           className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
         >
           <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

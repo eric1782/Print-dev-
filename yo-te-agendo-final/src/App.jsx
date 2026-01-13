@@ -2,12 +2,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 // Landing Page
-import Header from "./components/Header";
-import Hero from "./components/Hero";
-import QuienesSomos from "./pages/Landing/QuienesSomos";
-import Servicios from "./pages/Landing/Servicios";
-import Contacto from "./pages/Landing/Contacto";
-import Footer from "./components/Footer";
+import LandingPage from "./pages/Landing/LandingPage";
 
 // Autenticación
 import Login from "./pages/Login/Login";
@@ -16,6 +11,7 @@ import Registro from "./pages/Login/Registro";
 // Dashboards
 import HomeUsuario from "./pages/Home/HomeUsuario";
 import HomeEmpresa from "./pages/Home/HomeEmpresa";
+import HomeAdmin from "./pages/Home/HomeAdmin";
 import HomeEmpresaAgenda from "./empresa/HomeEmpresaAgenda";
 
 // Perfil Empresa Público
@@ -31,19 +27,7 @@ function App() {
     <Router>
       <Routes>
         {/* Landing Page */}
-        <Route
-          path="/"
-          element={
-            <>
-              <Header />
-              <Hero />
-              <QuienesSomos />
-              <Servicios />
-              <Contacto />
-              <Footer />
-            </>
-          }
-        />
+        <Route path="/" element={<LandingPage />} />
 
         {/* Autenticación */}
         <Route path="/login" element={<Login />} />
@@ -52,6 +36,7 @@ function App() {
         {/* Dashboards */}
         <Route path="/home-usuario" element={<HomeUsuario />} />
         <Route path="/home-empresa" element={<HomeEmpresa />} />
+        <Route path="/home-admin" element={<HomeAdmin />} />
         <Route path="/home-empresa/agenda" element={<HomeEmpresaAgenda />} />
 
         {/* Perfil público empresa */}

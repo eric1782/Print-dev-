@@ -1,25 +1,27 @@
-import { VALIDACIONES, RESTRICCIONES_TIEMPO } from './constants';
+import { RESTRICCIONES_TIEMPO } from './constants';
 
-/**
- * Utilidades para validaciones de formularios y datos
- */
 
-// Validar RUT chileno
 export const validarRUT = (rut) => {
   if (!rut) return false;
-  return VALIDACIONES.RUT_PATTERN.test(rut);
+  const rutLimpio = rut.trim();
+  const formatoValido = /^0*(\d{1,3}(\.?\d{3})*)-?([\dkK])$/.test(rutLimpio);
+  
+  return formatoValido;
 };
 
-// Validar email
+// Validar Email (Estándar)
 export const validarEmail = (email) => {
   if (!email) return false;
-  return VALIDACIONES.EMAIL_PATTERN.test(email);
+  const regexEmail = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+  return regexEmail.test(email);
 };
 
-// Validar teléfono chileno
+// Validar Teléfono (Flexible: Acepta +569, 569, 9, y espacios)
 export const validarTelefono = (telefono) => {
   if (!telefono) return false;
-  return VALIDACIONES.TELEFONO_PATTERN.test(telefono);
+  // Permite: +56 9 1234 5678, 912345678, 56912345678
+  const soloNumeros = telefono.replace(/\D/g, ''); 
+  return soloNumeros.length >= 8 && soloNumeros.length <= 12;
 };
 
 // Validar formulario de reserva
@@ -30,15 +32,19 @@ export const validarFormularioReserva = (form, modoModificacion = false, userEma
     if (!form.nombre?.trim()) {
       errores.push("El nombre es obligatorio");
     }
+    
+    // Validación de RUT
     if (!form.rut?.trim()) {
       errores.push("El RUT es obligatorio");
     } else if (!validarRUT(form.rut)) {
-      errores.push("El RUT no tiene un formato válido");
+      errores.push("El RUT no tiene un formato válido (Ej: 12.345.678-9)");
     }
+    
+    // Validación de Teléfono
     if (!form.telefono?.trim()) {
       errores.push("El teléfono es obligatorio");
     } else if (!validarTelefono(form.telefono)) {
-      errores.push("El teléfono no tiene un formato válido");
+      errores.push("El teléfono debe tener al menos 8 dígitos");
     }
     
     // Validar correo: usar userEmail si está disponible, sino form.correo
@@ -60,13 +66,16 @@ export const validarFormularioReserva = (form, modoModificacion = false, userEma
 // Validar si se puede modificar una reserva
 export const puedeModificarReserva = (fechaReserva) => {
   const horasRestantes = calcularHorasRestantes(fechaReserva);
-  return horasRestantes > RESTRICCIONES_TIEMPO.MODIFICAR_HORAS;
+  // Si RESTRICCIONES_TIEMPO no existe, usamos valor por defecto 24
+  const limite = RESTRICCIONES_TIEMPO?.MODIFICAR_HORAS || 24; 
+  return horasRestantes > limite;
 };
 
 // Validar si se puede cancelar una reserva
 export const puedeCancelarReserva = (fechaReserva) => {
   const horasRestantes = calcularHorasRestantes(fechaReserva);
-  return horasRestantes > RESTRICCIONES_TIEMPO.CANCELAR_HORAS;
+  const limite = RESTRICCIONES_TIEMPO?.CANCELAR_HORAS || 24;
+  return horasRestantes > limite;
 };
 
 // Calcular horas restantes (función auxiliar)
@@ -79,7 +88,8 @@ const calcularHorasRestantes = (fecha) => {
 // Validar horarios de trabajo
 export const validarHorarios = (horarios) => {
   const errores = [];
-  
+  if (!horarios) return { esValido: true, errores: [] };
+
   horarios.forEach((horario, index) => {
     if (!horario.dia) {
       errores.push(`El día ${index + 1} no tiene nombre`);

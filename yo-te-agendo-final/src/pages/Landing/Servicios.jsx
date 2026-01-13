@@ -14,86 +14,86 @@ function Servicios() {
 
         {/* Peluquería */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 hover:scale-105 transition-all duration-300 flex flex-col items-center">
-          <Scissors className="w-16 h-16 text-indigo-600 mb-4" />
+          <Scissors className="w-16 h-16 text-purple-500 mb-4" />
           <h3 className="text-2xl font-semibold text-indigo-600 mb-3">Peluquería</h3>
-          <p className="text-indigo-600">Cortes modernos y personalizados para todos los estilos.</p>
+          <p className="text-indigo-400">Cortes modernos y personalizados para todos los estilos.</p>
         </div>
 
         {/* Barbería */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 hover:scale-105 transition-all duration-300 flex flex-col items-center">
-          <GanttChartSquare className="w-16 h-16 text-indigo-600 mb-4" />
+          <GanttChartSquare className="w-16 h-16 text-purple-500 mb-4" />
           <h3 className="text-2xl font-semibold text-indigo-600 mb-3">Barbería</h3>
-          <p className="text-indigo-600">Cortes de cabello y cuidado de barba para hombres.</p>
+          <p className="text-indigo-400">Cortes de cabello y cuidado de barba para hombres.</p>
         </div>
 
         {/* Masajes */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 hover:scale-105 transition-all duration-300 flex flex-col items-center">
-        <Sparkles className="w-16 h-16 text-indigo-600 mb-4" />
+        <Sparkles className="w-16 h-16 text-purple-500 mb-4" />
           <h3 className="text-2xl font-semibold text-indigo-600 mb-3">Masajes</h3>
-          <p className="text-indigo-600">Relajación total con masajes profesionales de calidad.</p>
+          <p className="text-indigo-400">Relajación total con masajes profesionales de calidad.</p>
         </div>
 
         {/* Estética */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 hover:scale-105 transition-all duration-300 flex flex-col items-center">
-          <Sparkles className="w-16 h-16 text-indigo-600 mb-4" />
+          <Sparkles className="w-16 h-16 text-purple-500 mb-4" />
           <h3 className="text-2xl font-semibold text-indigo-600 mb-3">Estética</h3>
-          <p className="text-indigo-600">Tratamientos de belleza facial y corporal para verte increíble.</p>
+          <p className="text-indigo-400">Tratamientos de belleza facial y corporal para verte increíble.</p>
         </div>
 
         {/* Manicure y Pedicure */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 hover:scale-105 transition-all duration-300 flex flex-col items-center">
-          <Hand className="w-16 h-16 text-indigo-600 mb-4" />
+          <Hand className="w-16 h-16 text-purple-500 mb-4" />
           <h3 className="text-2xl font-semibold text-indigo-600 mb-3">Manicure y Pedicure</h3>
-          <p className="text-indigo-600">Cuidado completo de uñas para manos y pies.</p>
+          <p className="text-indigo-400">Cuidado completo de uñas para manos y pies.</p>
         </div>
 
         {/* Depilación */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 hover:scale-105 transition-all duration-300 flex flex-col items-center">
-          <Droplet className="w-16 h-16 text-indigo-600 mb-4" />
+          <Droplet className="w-16 h-16 text-purple-500 mb-4" />
           <h3 className="text-2xl font-semibold text-indigo-600 mb-3">Depilación</h3>
-          <p className="text-indigo-600">Servicios de depilación para mujer y hombre.</p>
+          <p className="text-indigo-400">Servicios de depilación para mujer y hombre.</p>
         </div>
 
         {/* Tratamientos Faciales */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 hover:scale-105 transition-all duration-300 flex flex-col items-center">
-          <Smile className="w-16 h-16 text-indigo-600 mb-4" />
+          <Smile className="w-16 h-16 text-purple-500 mb-4" />
           <h3 className="text-2xl font-semibold text-indigo-600 mb-3">Tratamientos Faciales</h3>
-          <p className="text-indigo-600">Rejuvenece tu piel con nuestras terapias de limpieza profunda.</p>
+          <p className="text-indigo-400">Rejuvenece tu piel con nuestras terapias de limpieza profunda.</p>
         </div>
 
         {/* Masajes Deportivos */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 hover:scale-105 transition-all duration-300 flex flex-col items-center">
-          <Armchair className="w-16 h-16 text-indigo-600 mb-4" />
+          <Armchair className="w-16 h-16 text-purple-500 mb-4" />
           <h3 className="text-2xl font-semibold text-indigo-600 mb-3">Masajes Deportivos</h3>
-          <p className="text-indigo-600">Ideal para la recuperación muscular post ejercicio.</p>
+          <p className="text-indigo-400">Ideal para la recuperación muscular post ejercicio.</p>
         </div>
 
         {/* Maquillaje Profesional */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 hover:scale-105 transition-all duration-300 flex flex-col items-center">
-          <Palette className="w-16 h-16 text-indigo-600 mb-4" />
+          <Palette className="w-16 h-16 text-purple-500 mb-4" />
           <h3 className="text-2xl font-semibold text-indigo-600 mb-3">Maquillaje Profesional</h3>
-          <p className="text-indigo-600">Maquillaje para eventos, sesiones y celebraciones especiales.</p>
+          <p className="text-indigo-400">Maquillaje para eventos, sesiones y celebraciones especiales.</p>
         </div>
 
         {/* Tratamientos Corporales */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 hover:scale-105 transition-all duration-300 flex flex-col items-center">
-          <Dumbbell className="w-16 h-16 text-indigo-600 mb-4" />
+          <Dumbbell className="w-16 h-16 text-purple-500 mb-4" />
           <h3 className="text-2xl font-semibold text-indigo-600 mb-3">Tratamientos Corporales</h3>
-          <p className="text-indigo-600">Reducción, tonificación y moldeamiento del cuerpo.</p>
+          <p className="text-indigo-400">Reducción, tonificación y moldeamiento del cuerpo.</p>
         </div>
 
         {/* Spa de Pies */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 hover:scale-105 transition-all duration-300 flex flex-col items-center">
-          <Footprints className="w-16 h-16 text-indigo-600 mb-4" />
+          <Footprints className="w-16 h-16 text-purple-500 mb-4" />
           <h3 className="text-2xl font-semibold text-indigo-600 mb-3">Spa de Pies</h3>
-          <p className="text-indigo-600">Relaja y revitaliza tus pies con nuestro tratamiento especial.</p>
+          <p className="text-indigo-400">Relaja y revitaliza tus pies con nuestro tratamiento especial.</p>
         </div>
 
         {/* Coloración de Cabello */}
         <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-8 hover:scale-105 transition-all duration-300 flex flex-col items-center">
-          <Brush className="w-16 h-16 text-indigo-600 mb-4" />
+          <Brush className="w-16 h-16 text-purple-500 mb-4" />
           <h3 className="text-2xl font-semibold text-indigo-600 mb-3">Coloración de Cabello</h3>
-          <p className="text-indigo-600">Renueva tu look con nuestros servicios de tintura profesional.</p>
+          <p className="text-indigo-400">Renueva tu look con nuestros servicios de tintura profesional.</p>
         </div>
 
       </div>

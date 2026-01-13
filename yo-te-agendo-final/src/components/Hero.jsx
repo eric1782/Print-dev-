@@ -4,17 +4,17 @@ function Hero() {
         <h1 className="text-5xl md:text-6xl font-bold text-indigo-600 mb-8">
         Administra tu agenda, crea tu E-commerce.   
         </h1>
-        <h1 className="text-5xl md:text-6xl font-bold text-indigo-600 mb-8">
+        <h1 className="text-4xl md:text-6xl font-bold text-indigo-600 mb-8">
         Todo desde un mismo lugar    
         </h1>
-        <p className="text-lg md:text-xl text-indigo-600 mb-8 max-w-2xl">
+        <p className="text-lg md:text-xl text-indigo-400 mb-8 max-w-2xl">
         Encuentra peluquerías, barberías, masajes y servicios de estética cerca de ti. Agenda tu cita en segundos con Yo Te Agendo.
         </p>
         <p className="text-lg md:text-xl text-indigo-600 mb-8 max-w-2xl">
         ¡Inscribete fácil y rápido!
         </p>
         <a
-        href="#contacto"
+        href="/login"
         className="bg-white text-indigo-600 font-bold py-4 px-8 rounded-xl shadow-xl hover:bg-indigo-50 transition-all duration-300 transform hover:scale-105 border-2 border-indigo-600"
         >
         Agenda tu Cita

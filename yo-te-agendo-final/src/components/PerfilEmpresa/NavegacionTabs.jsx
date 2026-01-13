@@ -5,7 +5,7 @@ import React from 'react';
  */
 const NavegacionTabs = ({ tabs, activeTab, onTabClick }) => {
   return (
-    <nav className="sticky top-16 z-40 bg-white/95 backdrop-blur-md border-b border-gray-100">
+    <nav className="sticky top-16 z-40 bg-gradient-to-r from-indigo-200 via-purple-100 to-pink-100 backdrop-blur-md border-b">
       <div 
         className="overflow-x-auto" 
         style={{ 
