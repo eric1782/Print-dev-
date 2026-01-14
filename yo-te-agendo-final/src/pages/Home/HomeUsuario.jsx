@@ -1,90 +1,141 @@
-import React from 'react';
-// placeholder de iconos
- 
-const PlaceholderIcon = ({ className }) => (
-  <div className={`w-16 h-16 bg-gray-300 rounded-full flex items-center justify-center ${className}`}>
-    {/* Placeholder visual */}
-    <span className="text-gray-600 text-xs">Icon</span>
-  </div>
-);
+import { useState } from "react";
+import { auth } from "../../firebase/firebaseConfig";
+import { useReservas, useEmpresas, useModal } from "../../hooks";
+import NotificacionesUsuario from "../../usuario/NotificacionesUsuario";
+import ReservarPopup from "../../components/ReservarPopup";
+import EditarCitaPopup from "../../components/EditarCitaPopup";
+import { NavbarUsuario, ListaEmpresas, ListaReservas, ModalCancelarReserva } from "../../components/HomeUsuario";
 
 function HomeUsuario() {
-  // Dummy data for demonstration with placeholders
-  const empresasHorizontal = Array.from({ length: 8 }).map((_, i) => ({
-    id: i,
-    nombre: `nombre_empresa ${i + 1}`,
-  }));
+  const [vistaActual, setVistaActual] = useState("empresas");
+  const [busqueda, setBusqueda] = useState("");
+  const [categoriaSeleccionada, setCategoriaSeleccionada] = useState("proximas");
+  const [loadingAccion, setLoadingAccion] = useState(false);
 
-  const empresasVertical = Array.from({ length: 10 }).map((_, i) => ({
-    id: i,
-    nombre: `nombre_empresa ${i + 1}`,
-    categoria: `Categoría ${i % 3 + 1}`, // Example categories
-  }));
+  // Hooks para modales
+  const modalModificar = useModal();
+  const modalEditarCita = useModal();
+  const modalCancelar = useModal();
 
-  const citasAgendadas = Array.from({ length: 10 }).map((_, i) => ({ // Increased to 10 for better slider demo
-    id: i,
-    nombreEmpresa: `nombre_empresa ${i + 1}`,
-    servicio: `servicio_empresa ${i + 1}`,
-    fecha: `fecha_servicio ${i + 1}`,
+  // Hooks personalizados
+  const { 
+    reservas, 
+    loading: loadingReservas, 
+    cancelarReserva, 
+    obtenerEstadoReserva,
+    resetearTodasLasReservas
+  } = useReservas();
+  const { 
+    empresas, 
+    loading: loadingEmpresas, 
+    buscarEmpresas 
+  } = useEmpresas();
+
+  const user = auth.currentUser;
+
+  // Solicitud de edición de cita
+  const solicitarEdicionCita = ({ id, nuevaFecha, mensaje, empresaId, servicio }) => {
+    // Notificación SOLO para la empresa, no para el usuario
+    // TODO: Implementar notificación usando hook
+    console.log('Solicitud de edición:', { id, nuevaFecha, mensaje, empresaId, servicio });
+  };
+
+  // Handlers
+  const handleCancelarReserva = async (mensaje) => {
+    if (!modalCancelar.data) return;
+    setLoadingAccion(true);
+    try {
+      const resultado = await cancelarReserva(modalCancelar.data.id, mensaje);
+      if (resultado.success) {
+        modalCancelar.closeModal();
+      }
+    } catch (error) {
+      console.error('Error cancelando reserva:', error);
+    } finally {
+      setLoadingAccion(false);
+    }
+  };
+
+  const handleEditarReserva = (reserva) => {
+    modalEditarCita.openModal(reserva);
+  };
+
+  const handleModificarReserva = (reserva) => {
+    modalModificar.openModal(reserva);
+  };
+
+  // Filtrar empresas por búsqueda
+  const empresasFiltradas = busqueda ? buscarEmpresas(busqueda) : empresas;
+
+  // Adjuntar empresaData a cada reserva
+  const reservasConEmpresa = reservas.map(reserva => ({
+    ...reserva,
+    empresaData: empresas.find(e => e.id === reserva.empresaId) || {}
   }));
 
   return (
-    <div className="min-h-screen bg-gray-100 py-10">
-      <div className="max-w-7xl mx-auto px-6">
+    <div className="min-h-screen bg-gray-50">
+      {/* Navegación */}
+      <NavbarUsuario 
+        vistaActual={vistaActual}
+        onCambiarVista={setVistaActual}
+      />
+      
+      <div className="max-w-full sm:max-w-5xl mx-auto p-2 sm:p-6">
+        {vistaActual === "misReservas" && (
+          <ListaReservas
+            reservas={reservasConEmpresa}
+            loading={loadingReservas}
+            categoriaSeleccionada={categoriaSeleccionada}
+            onCambiarCategoria={setCategoriaSeleccionada}
+            onModificarReserva={handleModificarReserva}
+            onEditarReserva={handleEditarReserva}
+            onCancelarReserva={(reserva) => modalCancelar.openModal(reserva)}
+            obtenerEstadoReserva={obtenerEstadoReserva}
+            resetearTodasLasReservas={resetearTodasLasReservas}
+          />
+        )}
 
-        {/* Sección de Empresas Horizontal*/}
-        <section className="mb-12">
-          <h2 className="text-3xl font-bold text-indigo-600 mb-6 text-center">Nuestras empresas recomendadas!</h2>
-          {/* ajustes de card y tamaño de iconos*/}
-          <div className="flex overflow-x-auto space-x-6 pb-4 scrollbar-hide">
-            {empresasHorizontal.map(empresa => (
-              <div key={empresa.id} className="flex-none w-64 bg-white rounded-lg shadow-lg p-6 flex flex-col items-center text-center hover:scale-105 transition">
-                {/* cambio de tamaño de iconos*/}
-                <PlaceholderIcon className="w-24 h-24 mb-3" />
-                <h3 className="text-lg font-semibold">{empresa.nombre}</h3>
-              </div>
-            ))}
-          </div>
-        </section>
+        {vistaActual === "empresas" && (
+          <ListaEmpresas
+            empresas={empresasFiltradas}
+            loading={loadingEmpresas}
+            busqueda={busqueda}
+            onBuscar={setBusqueda}
+          />
+        )}
 
-        {/* Sección de Empresas Vertical */}
-        <section className="mb-12">
-          <h2 className="text-3xl font-bold text-indigo-600 mb-6 text-center">Buscar empresas</h2>
-          {/* Contenedor*/}
-          <div className="flex flex-col overflow-y-auto space-y-6 h-96 pb-4 scrollbar-hide items-start-center min-w-full">
-            {empresasVertical.map(empresa => (
-              // tarjetitas
-              <div key={empresa.id} className="bg-white rounded-lg shadow-lg p-6 flex items-center space-x-4 hover:scale-105 transition max-w-6xl">
-                <PlaceholderIcon className="flex-shrink-0" />
-                <div>
-                  <h3 className="text-xl font-semibold">{empresa.nombre}</h3>
-                  <p className="text-gray-600 text-sm">{empresa.categoria}</p>  
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Sección de Citas Agendadas*/}
-        <section>
-          <h2 className="text-3xl font-bold text-indigo-600 mb-6 text-center">Tu historial de citas!</h2>
-          <div className="flex flex-col overflow-y-auto space-y-6 h-96 pb-4 scrollbar-hide items-start-center">
-            {citasAgendadas.map(cita => (
-              // Changed max-w-md to max-w-lg to make items wider
-              <div key={cita.id} className="bg-white rounded-lg shadow-lg p-6 flex flex-col md:flex-row justify-between items-center hover:scale-105 transition max-w-6x1">
-                <div className="mb-4 md:mb-0 md:mr-4">
-                  <h3 className="text-xl font-semibold">{cita.nombreEmpresa}</h3>
-                  <p className="text-gray-700">{cita.servicio}</p>
-                </div>
-                <div className="text-gray-500 text-sm">
-                  {cita.fecha}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
+        {vistaActual === "notificaciones" && (
+            <NotificacionesUsuario />
+        )}
       </div>
+
+      {/* Modales */}
+      {modalModificar.isOpen && (
+              <ReservarPopup
+          servicio={modalModificar.data?.servicio}
+          empresa={modalModificar.data?.empresa}
+          onClose={modalModificar.closeModal}
+                modoModificacion={true}
+          reservaAModificar={modalModificar.data}
+        />
+      )}
+
+      {modalEditarCita.isOpen && (
+        <EditarCitaPopup
+          reserva={modalEditarCita.data}
+          onClose={modalEditarCita.closeModal}
+          onSolicitarEdicion={solicitarEdicionCita}
+        />
+      )}
+
+      <ModalCancelarReserva
+        isOpen={modalCancelar.isOpen}
+        onClose={modalCancelar.closeModal}
+        reserva={modalCancelar.data}
+        onConfirmar={handleCancelarReserva}
+        loading={loadingAccion}
+      />
     </div>
   );
 }

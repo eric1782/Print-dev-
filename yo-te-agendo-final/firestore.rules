@@ -1,0 +1,67 @@
+rules_version = '2';
+
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+match /empresas/{document} {
+  allow read: if true;
+  allow write: if request.auth != null && request.auth.uid == document;
+}
+match /horarios/{document} {
+  allow read: if true;
+  allow write: if request.auth != null && request.auth.uid == request.resource.data.empresaId;
+}
+
+    match /servicios/{document} {
+      allow read: if true;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.empresaId;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.empresaId;
+    }
+
+    match /personal/{document} {
+      allow read: if true;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.empresaId;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.empresaId;
+    }
+
+    match /reservas/{document} {
+      allow read: if request.auth != null && (
+        request.auth.uid == resource.data.usuarioId ||
+        request.auth.uid == resource.data.empresaId ||
+        request.auth != null
+      );
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.usuarioId;
+      allow update, delete: if request.auth != null && (
+        request.auth.uid == resource.data.usuarioId ||
+        request.auth.uid == resource.data.empresaId
+      );
+    }
+
+    match /usuarios/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /notificaciones/{document} {
+      // Permitir crear notificaciones si el usuario está autenticado
+      allow create: if request.auth != null;
+      // Permitir leer notificaciones si el usuario es destinatario (usuarioId o empresaId)
+      allow read: if request.auth != null && (
+        (resource.data.usuarioId != null && request.auth.uid == resource.data.usuarioId) ||
+        (resource.data.empresaId != null && request.auth.uid == resource.data.empresaId)
+      );
+      // Permitir actualizar notificaciones (por ejemplo, marcar como leída) si el usuario es destinatario
+      allow update: if request.auth != null && (
+        (resource.data.usuarioId != null && request.auth.uid == resource.data.usuarioId) ||
+        (resource.data.empresaId != null && request.auth.uid == resource.data.empresaId)       
+      );
+              // Permitir eliminar notificaciones si el usuario es destinatario
+        allow delete: if request.auth != null && (
+          (resource.data.usuarioId != null && request.auth.uid == resource.data.usuarioId) ||
+          (resource.data.empresaId != null && request.auth.uid == resource.data.empresaId)
+        );
+    
+    }
+  }
+}

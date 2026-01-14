@@ -1,65 +1,69 @@
+// src/App.jsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
+// Landing Page
 import Header from "./components/Header";
-import Footer from "./components/Footer";
-import ScrollToTop from "./components/ScrollToTop";
-
+import Hero from "./components/Hero";
 import QuienesSomos from "./pages/Landing/QuienesSomos";
 import Servicios from "./pages/Landing/Servicios";
 import Contacto from "./pages/Landing/Contacto";
+import Footer from "./components/Footer";
 
-import HomeUsuario from "./pages/Home/HomeUsuario"; // Import HomeUsuario
+// Autenticación
+import Login from "./pages/Login/Login";
+import Registro from "./pages/Login/Registro";
 
-function LandingPage() {
-  return (
-    <>
-      <Header />
-      <main className="pt-20">
-        <section id="quienes-somos">
-          <QuienesSomos />
-        </section>
-        <section id="servicios">
-          <Servicios />
-        </section>
-        <section id="contacto">
-          <Contacto />
-        </section>
-      </main>
-      <Footer />
-    </>
-  );
-}
+// Dashboards
+import HomeUsuario from "./pages/Home/HomeUsuario";
+import HomeEmpresa from "./pages/Home/HomeEmpresa";
+import HomeEmpresaAgenda from "./empresa/HomeEmpresaAgenda";
+
+// Perfil Empresa Público
+import PerfilEmpresaPublico from "./usuario/PerfilEmpresaPublico";
+
+// Páginas de usuario
+import Ayuda from "./usuario/AyudaUsuario";
+import Configuracion from "./usuario/ConfiguracionUsuario";
+import MisDatos from "./usuario/MisDatosUsuario";
 
 function App() {
   return (
     <Router>
-      <ScrollToTop />
       <Routes>
         {/* Landing Page */}
-        <Route path="/" element={<LandingPage />} />
-
-        {/* Página después de iniciar sesión */}
         <Route
-          path="/home"
+          path="/"
           element={
             <>
               <Header />
-              <main className="pt-20">
-                <HomeUsuario />
-              </main>
+              <Hero />
+              <QuienesSomos />
+              <Servicios />
+              <Contacto />
               <Footer />
             </>
           }
         />
+
+        {/* Autenticación */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/registro" element={<Registro />} />
+
+        {/* Dashboards */}
+        <Route path="/home-usuario" element={<HomeUsuario />} />
+        <Route path="/home-empresa" element={<HomeEmpresa />} />
+        <Route path="/home-empresa/agenda" element={<HomeEmpresaAgenda />} />
+
+        {/* Perfil público empresa */}
+        <Route path="/empresa/:id" element={<PerfilEmpresaPublico />} />
+
+        {/* Vistas usuario */}
+        <Route path="/usuario/ayuda" element={<Ayuda />} />
+        <Route path="/usuario/configuracion" element={<Configuracion />} />
+        <Route path="/usuario/mis-datos" element={<MisDatos />} />
       </Routes>
     </Router>
   );
 }
+
 export default App;
-
-
-
-
-
-
-
